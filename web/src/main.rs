@@ -30,6 +30,8 @@ pub enum Route {
     Bouquets { kind: String },
     #[at("/settings")]
     Settings,
+    #[at("/multi")]
+    Multi,
     #[at("/accounts")]
     Accounts,
     #[not_found]
@@ -50,6 +52,7 @@ fn switch(r: Route) -> Html {
         Route::Play => html! { <PlayerPage /> },
         Route::Bouquets { kind } => html! { <BouquetsPage kind={api::Kind::from_key(&kind)} /> },
         Route::Settings => html! { <SettingsPage /> },
+        Route::Multi => html! { <MultiPage /> },
         Route::Accounts => html! { <AccountsPage /> },
     }
 }

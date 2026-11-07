@@ -165,6 +165,7 @@ pub fn home_page() -> Html {
         <div class="page">
             <TopBar title="ruSTv" sub={acc.map(|a| AttrValue::from(a.name))}>
                 <Link<Route> to={Route::Bouquets { kind: "live".into() }} classes="icon" ><span title={t("Bouquets", "Bouquets")}>{"📚"}</span></Link<Route>>
+                <Link<Route> to={Route::Multi} classes="icon"><span title={t("Multi-View (4 Sender)", "Multi-view (4 channels)")}>{"▦"}</span></Link<Route>>
                 <Link<Route> to={Route::Accounts} classes="icon"><span title={t("Konten", "Accounts")}>{"👤"}</span></Link<Route>>
                 <Link<Route> to={Route::Settings} classes="icon"><span title={t("Einstellungen", "Settings")}>{"⚙️"}</span></Link<Route>>
             </TopBar>

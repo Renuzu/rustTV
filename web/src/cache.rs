@@ -15,6 +15,7 @@ pub struct Data {
 thread_local! {
     static DATA: RefCell<HashMap<Kind, Data>> = RefCell::new(HashMap::new());
     static QUEUE: RefCell<Queue> = RefCell::new(Queue::default());
+    static MULTI_FIRST: RefCell<Option<Entry>> = const { RefCell::new(None) };
 }
 
 pub fn get(kind: Kind) -> Option<Data> {
@@ -159,4 +160,12 @@ pub fn set_single(url: String, title: String) {
 
 pub fn queue() -> Queue {
     QUEUE.with(|q| q.borrow().clone())
+}
+
+/// Channel to put into the first multi-view window.
+pub fn set_multi_first(e: Option<Entry>) {
+    MULTI_FIRST.with(|m| *m.borrow_mut() = e);
+}
+pub fn take_multi_first() -> Option<Entry> {
+    MULTI_FIRST.with(|m| m.borrow_mut().take())
 }

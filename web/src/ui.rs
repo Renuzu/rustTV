@@ -463,3 +463,40 @@ pub fn copy_text(s: &str) {
         let _ = w.navigator().clipboard().write_text(s);
     }
 }
+
+// ------------------------------------------------------------ searchable picker
+
+#[derive(Properties, PartialEq)]
+pub struct PickProps {
+    pub title: String,
+    pub list: std::rc::Rc<Vec<Entry>>,
+    pub on_pick: Callback<Entry>,
+}
+
+#[function_component(PickDialog)]
+pub fn pick_dialog(p: &PickProps) -> Html {
+    let ui = use_ui();
+    let q = use_state(String::new);
+    let ql = q.trim().to_lowercase();
+    let pick = {
+        let (ui, cb) = (ui.clone(), p.on_pick.clone());
+        Callback::from(move |e: Entry| {
+            ui.close();
+            cb.emit(e);
+        })
+    };
+    let close = ui.clone();
+    let logo = store::settings().show_logos;
+    html! {
+        <Modal title={p.title.clone()}>
+            <input type="search" autofocus=true placeholder={t("Suchen …", "Search …")} value={(*q).clone()}
+                oninput={ let q = q.clone(); move |e: InputEvent| q.set(input_value_i(&e)) } />
+            <div class="list pick">
+            { for p.list.iter().filter(|e| ql.is_empty() || e.name.to_lowercase().contains(&ql)).take(300).cloned().map(|e| {
+                html!{ <EntryCard entry={e} {logo} onclick={pick.clone()} /> }
+            }) }
+            </div>
+            <div class="actions"><button class="ghost" onclick={move |_| close.close()}>{ t("Abbrechen", "Cancel") }</button></div>
+        </Modal>
+    }
+}

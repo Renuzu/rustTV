@@ -29,7 +29,8 @@
 - **Home screen** with big tiles, cover pictures, "recently watched" and "continue watching"
 - **Sorting**: A–Z, Z–A, by category (your bouquet order) or provider order, favorites first, search everywhere
 - **Series by season** – open a show, pick a season, see only its episodes
-- **Player**: switch channels while watching (buttons, channel list, swipe, keyboard), last channel, now/next programme (EPG), aspect ratio, sleep timer, picture-in-picture, fullscreen, playback speed
+- **Multi-view**: up to 4 live channels at once (sound from the selected window)
+- **Player**: own control bar (play/pause, stop, seek, volume), switch channels while watching (buttons, channel list, swipe, keyboard), last channel, now/next programme (EPG), aspect ratio, sleep timer, picture-in-picture, fullscreen, playback speed
 - **Touch gestures** (can be switched off one by one): brightness (left), volume (right), seek / switch channel (sideways)
 - **Resume** movies and episodes, **auto-play** next episode
 - **TV guide & catch-up** (archive) when your provider supports it

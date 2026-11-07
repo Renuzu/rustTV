@@ -2,83 +2,148 @@
 // handles touch gestures (brightness, volume, seek, channel switch) and keyboard.
 (function () {
   "use strict";
-  let mp = null, hls = null, video = null, box = null, opts = {}, cbs = {};
+  let eng = null, video = null, box = null, opts = {}, cbs = {};
   let hideTimer = null, info = null, infoTimer = null, bright = 1, fitMode = "contain", zoom = 1;
 
   function hasMse() { return !!(window.MediaSource || window.ManagedMediaSource); }
-  function nativeHls(v) { return !!v.canPlayType("application/vnd.apple.mpegurl"); }
+  function canTs() { return hasMse() && window.mpegts && mpegts.isSupported(); }
+  function abs(u) { return u ? new URL(u, location.href).href : u; }
 
-  function destroy() {
-    if (mp) { try { mp.pause(); mp.unload(); mp.detachMediaElement(); mp.destroy(); } catch (e) {} mp = null; }
-    if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
-    if (video) { video.removeAttribute("src"); try { video.load(); } catch (e) {} }
-  }
-
-  function fail(msg) { if (cbs.error) cbs.error(String(msg || "error")); }
-
-  function playHls(url) {
+  // ---------------------------------------------------------- playback engine (one per <video>)
+  function Engine(v, onError) { this.v = v; this.mp = null; this.hls = null; this.onError = onError || function () {}; }
+  Engine.prototype.destroy = function () {
+    if (this.mp) { try { this.mp.pause(); this.mp.unload(); this.mp.detachMediaElement(); this.mp.destroy(); } catch (e) {} this.mp = null; }
+    if (this.hls) { try { this.hls.destroy(); } catch (e) {} this.hls = null; }
+    this.v.removeAttribute("src"); try { this.v.load(); } catch (e) {}
+  };
+  Engine.prototype.busy = function () { return !!(this.mp || this.hls); };
+  Engine.prototype.playHls = function (url) {
+    const self = this, v = this.v;
     if (window.Hls && Hls.isSupported()) {
-      hls = new Hls({ enableWorker: true, lowLatencyMode: false });
-      hls.on(Hls.Events.ERROR, function (_, d) {
+      this.hls = new Hls({ enableWorker: true, lowLatencyMode: false });
+      this.hls.on(Hls.Events.ERROR, function (_, d) {
         if (!d.fatal) return;
-        if (d.type === Hls.ErrorTypes.MEDIA_ERROR) { try { hls.recoverMediaError(); return; } catch (e) {} }
-        fail("HLS: " + d.details);
+        if (d.type === Hls.ErrorTypes.MEDIA_ERROR) { try { self.hls.recoverMediaError(); return; } catch (e) {} }
+        self.onError("HLS: " + d.details);
       });
-      hls.loadSource(url);
-      hls.attachMedia(video);
-    } else if (nativeHls(video)) {
-      video.src = url;
-    } else {
-      fail("HLS not supported in this browser");
-      return;
-    }
-    video.play().catch(function () {});
-  }
-
-  function playTs(url, live, fallback) {
-    const ok = window.mpegts && mpegts.isSupported() && hasMse();
-    if (!ok) { if (fallback) playHls(fallback); else fail("MPEG-TS not supported in this browser"); return; }
-    mp = mpegts.createPlayer({ type: "mpegts", isLive: live, url: url }, {
+      this.hls.loadSource(url);
+      this.hls.attachMedia(v);
+    } else if (v.canPlayType("application/vnd.apple.mpegurl")) {
+      v.src = url;
+    } else { this.onError("HLS not supported in this browser"); return; }
+    v.play().catch(function () {});
+  };
+  Engine.prototype.playTs = function (url, live, fallback) {
+    const self = this;
+    if (!canTs()) { if (fallback) this.playHls(fallback); else this.onError("MPEG-TS not supported in this browser"); return; }
+    this.mp = mpegts.createPlayer({ type: "mpegts", isLive: live, url: url }, {
       enableWorker: true, lazyLoad: false, liveBufferLatencyChasing: live,
       liveBufferLatencyMaxLatency: 6, liveBufferLatencyMinRemain: 1.5, autoCleanupSourceBuffer: true,
     });
-    mp.on(mpegts.Events.ERROR, function (type, detail) {
-      if (fallback) { const f = fallback; fallback = null; destroy(); playHls(f); }
-      else fail("TS: " + type + " " + detail);
+    this.mp.on(mpegts.Events.ERROR, function (type, detail) {
+      if (fallback) { const f = fallback; fallback = null; self.destroy(); self.playHls(f); }
+      else self.onError("TS: " + type + " " + detail);
     });
-    mp.attachMediaElement(video);
-    mp.load();
-    const p = mp.play(); if (p && p.catch) p.catch(function () {});
-  }
+    this.mp.attachMediaElement(this.v);
+    this.mp.load();
+    const p = this.mp.play(); if (p && p.catch) p.catch(function () {});
+  };
+  Engine.prototype.playLive = function (ts, hlsUrl, mode) {
+    ts = abs(ts); hlsUrl = abs(hlsUrl);
+    if (mode === "hls") this.playHls(hlsUrl);
+    else if (mode === "ts" || canTs()) this.playTs(ts, true, hlsUrl);
+    else this.playHls(hlsUrl);
+  };
+  Engine.prototype.playFile = function (url, startAt) {
+    const v = this.v;
+    v.src = abs(url);
+    if (startAt > 0) {
+      v.addEventListener("loadedmetadata", function once() {
+        v.removeEventListener("loadedmetadata", once);
+        try { v.currentTime = startAt; } catch (e) {}
+      });
+    }
+    v.play().catch(function () {});
+  };
 
-  function abs(u) { return u ? new URL(u, location.href).href : u; }
+  function destroy() { if (eng) eng.destroy(); }
+  function fail(msg) { if (cbs.error) cbs.error(String(msg || "error")); }
 
   function start(container, v, o) {
     destroy();
     o = o || {};
-    o.tsUrl = abs(o.tsUrl); o.hlsUrl = abs(o.hlsUrl); o.fileUrl = abs(o.fileUrl);
-    box = container; video = v; opts = o || {};
+    box = container; video = v; opts = o;
+    if (!eng || eng.v !== v) eng = new Engine(v, fail);
     video.style.filter = bright !== 1 ? "brightness(" + bright + ")" : "";
     applyFit();
-    if (o.live) {
-      const mode = o.mode || "auto";
-      if (mode === "hls") playHls(o.hlsUrl);
-      else if (mode === "ts") playTs(o.tsUrl, true, o.hlsUrl);
-      else if (hasMse() && window.mpegts && mpegts.isSupported()) playTs(o.tsUrl, true, o.hlsUrl);
-      else playHls(o.hlsUrl);
-    } else if (o.tsFile) {
-      playTs(o.fileUrl, false, null);
-    } else {
-      video.src = o.fileUrl;
-      if (o.startAt > 0) {
-        video.addEventListener("loadedmetadata", function once() {
-          video.removeEventListener("loadedmetadata", once);
-          try { video.currentTime = o.startAt; } catch (e) {}
-        });
-      }
-      video.play().catch(function () {});
-    }
+    controls();
+    if (o.live) eng.playLive(o.tsUrl, o.hlsUrl, o.mode || "auto");
+    else if (o.tsFile) eng.playTs(abs(o.fileUrl), false, null);
+    else eng.playFile(o.fileUrl, o.startAt || 0);
     showUi();
+  }
+
+  // ---------------------------------------------------------- control bar (play/pause, stop, seek, volume)
+  function controls() {
+    let c = box.querySelector(".ctrl");
+    if (!c) {
+      c = document.createElement("div");
+      c.className = "ctrl";
+      c.innerHTML =
+        '<button data-a="back" title="-10 s">⏪</button>' +
+        '<button data-a="play" class="big" title="Play/Pause">⏸</button>' +
+        '<button data-a="fwd" title="+10 s">⏩</button>' +
+        '<button data-a="stop" title="Stop">⏹</button>' +
+        '<span class="time">0:00</span>' +
+        '<input class="seek" type="range" min="0" max="1000" value="0" />' +
+        '<button data-a="mute" title="Ton">🔊</button>' +
+        '<input class="vol" type="range" min="0" max="100" value="100" />' +
+        '<button data-a="fs" title="Vollbild">⛶</button>';
+      box.appendChild(c);
+      const seek = c.querySelector(".seek"), vol = c.querySelector(".vol");
+      c.addEventListener("click", function (e) {
+        const b = e.target.closest("button"); if (!b || !video) return;
+        e.stopPropagation();
+        switch (b.dataset.a) {
+          case "play": video.paused ? video.play() : video.pause(); break;
+          case "back": video.currentTime = Math.max(0, video.currentTime - 10); break;
+          case "fwd": video.currentTime = video.currentTime + 10; break;
+          case "stop": if (cbs.stop) cbs.stop(); break;
+          case "mute": video.muted = !video.muted; break;
+          case "fs": fullscreen(); break;
+        }
+        showUi();
+      });
+      seek.addEventListener("input", function () {
+        seek.dataset.drag = "1";
+        if (video && isFinite(video.duration)) c.querySelector(".time").textContent = fmt(video.duration * seek.value / 1000) + " / " + fmt(video.duration);
+      });
+      seek.addEventListener("change", function () {
+        seek.dataset.drag = "";
+        if (video && isFinite(video.duration)) video.currentTime = video.duration * seek.value / 1000;
+      });
+      vol.addEventListener("input", function () { if (video) { video.volume = vol.value / 100; video.muted = vol.value == 0; } });
+      c.addEventListener("mousemove", showUi);
+      c.addEventListener("touchstart", showUi, { passive: true });
+    }
+    c.classList.toggle("live", !!opts.live);
+    if (!video.dataset.ctrlBound) {
+      video.dataset.ctrlBound = "1";
+      const upd = function () {
+        const cc = box && box.querySelector(".ctrl"); if (!cc) return;
+        cc.querySelector('[data-a="play"]').textContent = video.paused ? "▶" : "⏸";
+        cc.querySelector('[data-a="mute"]').textContent = video.muted || video.volume === 0 ? "🔇" : "🔊";
+        const vol = cc.querySelector(".vol"); vol.value = video.muted ? 0 : Math.round(video.volume * 100);
+        const seek = cc.querySelector(".seek"), d = video.duration;
+        if (isFinite(d) && d > 0 && !opts.live) {
+          if (!seek.dataset.drag) seek.value = Math.round(video.currentTime / d * 1000);
+          if (!seek.dataset.drag) cc.querySelector(".time").textContent = fmt(video.currentTime) + " / " + fmt(d);
+        } else {
+          cc.querySelector(".time").textContent = opts.live ? "● LIVE" : fmt(video.currentTime);
+        }
+      };
+      ["play", "pause", "timeupdate", "volumechange", "durationchange", "loadedmetadata"].forEach(function (ev) { video.addEventListener(ev, upd); });
+    }
   }
 
   // ---------------------------------------------------------- picture format
@@ -192,6 +257,7 @@
     layer.addEventListener("click", function () { toggleUi(); });
     layer.addEventListener("dblclick", function () { fullscreen(); });
     layer.addEventListener("mousemove", function () { showUi(); });
+    layer.parentElement && layer.parentElement.addEventListener("mousemove", function () { showUi(); });
   }
 
   document.addEventListener("keydown", function (e) {
@@ -216,17 +282,29 @@
     else if (video && video.webkitEnterFullscreen) video.webkitEnterFullscreen(); // iPhone
   }
 
+  // ---------------------------------------------------------- multi-view (several engines at once)
+  const multi = {};
+  window.rustvMulti = {
+    start: function (i, v, ts, hlsUrl, mode, onError) {
+      if (multi[i]) multi[i].destroy();
+      multi[i] = new Engine(v, function (m) { if (onError) onError(String(m)); });
+      multi[i].playLive(ts, hlsUrl, mode || "auto");
+    },
+    stop: function (i) { if (multi[i]) { multi[i].destroy(); delete multi[i]; } },
+    stopAll: function () { Object.keys(multi).forEach(function (k) { multi[k].destroy(); delete multi[k]; }); },
+  };
+
   window.rustvPlayer = {
     start: start,
     stop: function () { destroy(); box = null; },
     attachGestures: function (layer) { gestures(layer); },
-    setCallbacks: function (zap, ended, error) {
-      cbs = { zap: zap, ended: ended, error: error };
+    setCallbacks: function (zap, ended, error, stop) {
+      cbs = { zap: zap, ended: ended, error: error, stop: stop };
     },
     bindVideo: function (v) {
       v.addEventListener("ended", function () { if (cbs.ended) cbs.ended(); });
       v.addEventListener("error", function () {
-        if (mp || hls) return; // engines report their own errors
+        if (eng && eng.busy()) return; // engines report their own errors
         const c = v.error ? v.error.code : 0;
         fail(c === 4 ? "format not supported by this browser" : "playback error " + c);
       });

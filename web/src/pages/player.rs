@@ -22,6 +22,7 @@ extern "C" {
         zap: &Closure<dyn Fn(i32)>,
         ended: &Closure<dyn Fn()>,
         error: &Closure<dyn Fn(String)>,
+        stop: &Closure<dyn Fn()>,
     );
     #[wasm_bindgen(js_namespace = rustvPlayer, js_name = time)]
     fn js_time() -> f64;
@@ -142,17 +143,18 @@ pub fn player_page() -> Html {
 
     // callbacks from JS (kept alive for the lifetime of the page)
     {
-        let (st, error) = (st.clone(), error.clone());
+        let (st, error, nav_cb) = (st.clone(), error.clone(), nav.clone());
         use_effect_with((), move |_| {
             let d1 = st.dispatcher();
             let d2 = st.dispatcher();
             let zap = Closure::<dyn Fn(i32)>::new(move |d| d1.dispatch(Act::Zap(d)));
             let ended = Closure::<dyn Fn()>::new(move || d2.dispatch(Act::Ended));
             let err = Closure::<dyn Fn(String)>::new(move |m: String| error.set(Some(m)));
-            js_callbacks(&zap, &ended, &err);
+            let stop = Closure::<dyn Fn()>::new(move || nav_cb.back());
+            js_callbacks(&zap, &ended, &err, &stop);
             move || {
                 js_stop();
-                drop((zap, ended, err));
+                drop((zap, ended, err, stop));
             }
         });
     }
@@ -446,10 +448,17 @@ pub fn player_page() -> Html {
         html! {}
     };
 
+    let multi_btn = {
+        let (nav, cur) = (nav.clone(), current.clone());
+        Callback::from(move |_: MouseEvent| {
+            cache::set_multi_first(cur.clone());
+            nav.push(&crate::Route::Multi);
+        })
+    };
     let multi = single.is_none() && list.len() > 1;
     html! {
         <div class="player ui" ref={container}>
-            <video ref={video} playsinline=true autoplay=true controls=true></video>
+            <video ref={video} playsinline=true autoplay=true></video>
             <div class="gest" ref={layer}></div>
             <div class="ov">
                 <div class="ov-top">
@@ -467,6 +476,7 @@ pub fn player_page() -> Html {
                     }
                     if live && multi { <button onclick={recall}>{ t("↺ Letzter", "↺ Last") }</button> }
                     if live { <button onclick={epg_btn}>{ t("📋 Programm", "📋 Guide") }</button> }
+                    if live { <button onclick={multi_btn}>{ t("▦ Multi-View", "▦ Multi-view") }</button> }
                     <button onclick={cycle_fit}>{ t("⤢ Format", "⤢ Aspect") }</button>
                     if !live { <button onclick={speed_menu}>{ t("⏩ Tempo", "⏩ Speed") }</button> }
                     <button onclick={sleep_menu}>{ t("⏾ Timer", "⏾ Sleep") }</button>
