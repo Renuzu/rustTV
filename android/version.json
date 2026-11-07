@@ -1,6 +1,6 @@
 {
-  "versionCode": 14,
-  "versionName": "3.11",
+  "versionCode": 15,
+  "versionName": "3.12",
   "apk": "https://github.com/Renuzu/rustTV/raw/main/android/dist/rustv-android.apk",
-  "notes": "Neu: Knopf \u201eVPN an/aus\u201c auf der Startseite; WireGuard kann sich beim Schlie\u00dfen automatisch trennen (Einstellungen)."
+  "notes": "Neu: 4 Designs (A Chips, B Leiste, C Kacheln, D Kino) \u2013 Auswahl auf der Startseite. Kategorien sind jetzt gut sichtbar."
 }

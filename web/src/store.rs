@@ -79,6 +79,8 @@ pub struct Settings {
     pub proxy_pass: String,
     /// start-screen button: proxy on/off (settings stay)
     pub proxy_on: bool,
+    /// look: 0 chips, 1 side rail, 2 tiles, 3 cinema
+    pub design: u8,
 }
 
 impl Default for Settings {
@@ -107,6 +109,7 @@ impl Default for Settings {
             proxy_user: String::new(),
             proxy_pass: String::new(),
             proxy_on: true,
+            design: 0,
         }
     }
 }
@@ -116,6 +119,24 @@ pub fn settings() -> Settings {
 }
 pub fn save_settings(s: &Settings) {
     let _ = LocalStorage::set("rustv.settings", s);
+    apply_design(s.design);
+}
+
+pub const DESIGNS: [(&str, &str); 4] = [
+    ("A · Chips", "A · Chips"),
+    ("B · Leiste", "B · Side rail"),
+    ("C · Kacheln", "C · Tiles"),
+    ("D · Kino", "D · Cinema"),
+];
+
+/// Sets the design class (d0–d3) on <html> so the CSS can switch the look.
+pub fn apply_design(d: u8) {
+    if let Some(el) = web_sys::window()
+        .and_then(|w| w.document())
+        .and_then(|d| d.document_element())
+    {
+        el.set_class_name(&format!("d{}", d.min(3)));
+    }
 }
 
 // ------------------------------------------------------------ accounts

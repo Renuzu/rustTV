@@ -64,7 +64,19 @@ class HomeActivity : AppCompatActivity() {
             true
         }
 
+        Design.apply(this, findViewById<View>(R.id.content).parent.parent as View, toolbar)
         val cards = findViewById<LinearLayout>(R.id.cards)
+        // Design-Auswahl als Chips
+        val dScroll = android.widget.HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false }
+        val dGroup = com.google.android.material.chip.ChipGroup(this).apply { isSingleLine = true; isSingleSelection = true; isSelectionRequired = true }
+        dGroup.addView(TextView(this).apply { text = "Design:"; setTextColor(Design.colors(store.design).muted); gravity = android.view.Gravity.CENTER_VERTICAL })
+        Design.NAMES.forEachIndexed { i, name ->
+            val chip = designChip(name, i == store.design)
+            chip.setOnClickListener { if (store.design != i) { store.design = i; recreate() } }
+            dGroup.addView(chip)
+        }
+        dScroll.addView(dGroup)
+        cards.addView(dScroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = (8 * resources.displayMetrics.density).toInt() })
         // VPN-Knopf (nur sichtbar, wenn eine WireGuard-Datei importiert ist)
         vpnBtn = com.google.android.material.button.MaterialButton(this).apply {
             isAllCaps = false
@@ -91,7 +103,7 @@ class HomeActivity : AppCompatActivity() {
         }
         // Tresor-Kachel (PIN-geschützt)
         val vaultCard = inf.inflate(R.layout.home_card, cards, false)
-        vaultCard.setBackgroundColor(0xFF37474F.toInt())
+        vaultCard.background = Design.rounded(Design.colors(store.design).surface, 16f, this)
         vaultCard.clipToOutline = true
         vaultCard.findViewById<TextView>(R.id.label).text = "🔐 Tresor"
         vaultCard.findViewById<TextView>(R.id.count).text = "Geschützte Inhalte – PIN nötig"
@@ -116,6 +128,17 @@ class HomeActivity : AppCompatActivity() {
         refreshVpn()
         Updater.check(this)   // bei jedem Öffnen (höchstens alle 5 Minuten)
         if (Kind.entries.all { Cache.entries.containsKey(it) }) showAll()
+    }
+
+    private fun designChip(name: String, on: Boolean) = com.google.android.material.chip.Chip(this).apply {
+        text = name
+        isCheckable = true
+        isChecked = on
+        isCheckedIconVisible = false
+        val c = Design.colors(store.design)
+        chipBackgroundColor = Design.tint(if (on) Design.ACCENT else c.surface)
+        setTextColor(0xFFFFFFFF.toInt())
+        chipStrokeWidth = 0f
     }
 
     private fun openList(k: Kind) {

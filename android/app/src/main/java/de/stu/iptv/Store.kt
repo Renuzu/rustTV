@@ -77,6 +77,11 @@ class Store(val ctx: Context) {
     private fun k(key: String) = "a${account?.id ?: "0"}_$key"
 
     // ---------- Einstellungen (Einstellungen-Seite) ----------
+    /** Aussehen: 0 Chips, 1 Seitenleiste, 2 Kacheln, 3 Kino */
+    var design: Int
+        get() = p.getInt("design", 0)
+        set(v) = p.edit().putInt("design", v).apply()
+
     var sortMode: Int
         get() = p.getInt("sort", 0)
         set(v) = p.edit().putInt("sort", v).apply()

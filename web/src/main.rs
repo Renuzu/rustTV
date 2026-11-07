@@ -135,5 +135,6 @@ fn gloo_console_log(s: &str) {
 
 fn main() {
     store::init_lang();
+    store::apply_design(store::settings().design);
     yew::Renderer::<App>::new().render();
 }

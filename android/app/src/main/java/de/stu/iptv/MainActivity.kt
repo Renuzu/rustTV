@@ -9,7 +9,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ProgressBar
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -56,7 +55,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var api: Xtream
     private lateinit var adapter: EntryAdapter
     private lateinit var touchHelper: ItemTouchHelper
-    private lateinit var spinner: Spinner
+    private var design = 0
+    /** Design C: Kachel gewählt → Liste zeigen */
+    private var picked = false
+    private data class CatOpt(val id: String?, val label: String, val count: Int, val locked: Boolean)
+    private var opts: List<CatOpt> = emptyList()
     private lateinit var search: EditText
     private lateinit var progress: ProgressBar
     private lateinit var empty: TextView
@@ -65,7 +68,6 @@ class MainActivity : AppCompatActivity() {
 
     private var kind = Kind.LIVE
     private var selectedCategory: String? = null
-    private var spinnerIds: List<String?> = emptyList()
     private var autoStartPending = false
     /** true = Tresor-Ansicht (nur geschützte Inhalte) */
     private var vault = false
@@ -105,8 +107,10 @@ class MainActivity : AppCompatActivity() {
         toolbar.title = title()
         toolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
         toolbar.setNavigationOnClickListener { finish() }
-        spinner = findViewById(R.id.category)
         search = findViewById(R.id.search)
+        design = store.design
+        Design.apply(this, findViewById(R.id.root), toolbar)
+        search.background = Design.rounded(Design.colors(design).surface2, 12f, this)
         progress = findViewById(R.id.progress)
         empty = findViewById(R.id.empty)
         info = findViewById(R.id.info)
@@ -146,6 +150,7 @@ class MainActivity : AppCompatActivity() {
                 kind = Kind.entries[tab.position]
                 toolbar.title = title()
                 selectedCategory = null
+                picked = false
                 search.setText("")
                 load()
             }
@@ -153,24 +158,20 @@ class MainActivity : AppCompatActivity() {
             override fun onTabReselected(tab: TabLayout.Tab) {}
         })
 
-        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
-                val newCat = spinnerIds.getOrNull(pos)
-                if (newCat == selectedCategory) return
-                if (!vault && newCat != null && !Cache.unlocked && newCat in lockedCategories(store, kind)) {
-                    selectSpinner(selectedCategory)
-                    Dialogs.askPin(this@MainActivity) { selectedCategory = newCat; setupCategories(); refresh() }
-                    return
-                }
-                selectedCategory = newCat; refresh()
+        findViewById<View>(R.id.catBack).setOnClickListener { picked = false; updateCatViews(); refresh() }
+        findViewById<View>(R.id.catBig).setOnClickListener { showCategorySheet() }
+        findViewById<RecyclerView>(R.id.catGrid).layoutManager = androidx.recyclerview.widget.GridLayoutManager(this,
+            ((resources.displayMetrics.widthPixels / resources.displayMetrics.density) / 160).toInt().coerceAtLeast(2))
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (design == 2 && picked) { picked = false; updateCatViews(); refresh() } else finish()
             }
-            override fun onNothingSelected(p: AdapterView<*>?) {}
-        }
+        })
 
         search.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
             override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
-            override fun afterTextChanged(s: Editable?) { refresh() }
+            override fun afterTextChanged(s: Editable?) { if (design == 2) updateCatViews(); refresh() }
         })
 
         load()
@@ -253,16 +254,166 @@ class MainActivity : AppCompatActivity() {
         val cats = Bouquets.ordered(store, kind).filter {
             if (vault) it.id in vc || it.id in vaultItemCats else it.id !in hidden && it.id !in vc
         }
-        val labels = listOf(if (vault) "Alles im Tresor" else "Alle Kategorien", "★ Favoriten", "🕘 Zuletzt gesehen") +
-            cats.map { if (it.id in locked && !Cache.unlocked) "🔒 ${it.name}" else it.name }
-        spinnerIds = listOf<String?>(null, CAT_FAV, CAT_HIST) + cats.map { it.id }
-        spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, labels)
-        selectSpinner(selectedCategory)
+        val vi = store.vaultItems(kind)
+        val counts = HashMap<String, Int>()
+        (Cache.entries[kind] ?: emptyList()).forEach {
+            if (Bouquets.isVault(it, vc, vi) == vault) counts[it.categoryId] = (counts[it.categoryId] ?: 0) + 1
+        }
+        opts = listOf(
+            CatOpt(null, if (vault) "Alles im Tresor" else "Alle", counts.values.sum(), false),
+            CatOpt(CAT_FAV, "★ Favoriten", store.favorites(kind).size, false),
+            CatOpt(CAT_HIST, "Zuletzt gesehen", store.history(kind).size, false),
+        ) + cats.map { CatOpt(it.id, it.name, counts[it.id] ?: 0, !vault && it.id in locked && !Cache.unlocked) }
+        updateCatViews()
     }
 
-    private fun selectSpinner(cat: String?) {
-        val idx = spinnerIds.indexOf(cat).coerceAtLeast(0)
-        if (spinner.selectedItemPosition != idx) spinner.setSelection(idx)
+    private fun label(o: CatOpt) = if (o.locked) "🔒 ${o.label}" else o.label
+
+    /** Kategorie gewählt (mit PIN-Abfrage bei gesperrten Kategorien). */
+    private fun choose(id: String?) {
+        if (!vault && id != null && !Cache.unlocked && id in lockedCategories(store, kind)) {
+            Dialogs.askPin(this) { selectedCategory = id; picked = true; setupCategories(); refresh() }
+            return
+        }
+        selectedCategory = id
+        picked = true
+        updateCatViews()
+        refresh()
+    }
+
+    /** Zeigt die Kategorie-Auswahl im gewählten Design. */
+    private fun updateCatViews() {
+        val c = Design.colors(design)
+        val d = resources.displayMetrics.density
+        val cur = opts.firstOrNull { it.id == selectedCategory } ?: opts.firstOrNull()
+        val chipsScroll = findViewById<View>(R.id.catChipsScroll)
+        val chips = findViewById<com.google.android.material.chip.ChipGroup>(R.id.catChips)
+        val railScroll = findViewById<View>(R.id.railScroll)
+        val rail = findViewById<android.widget.LinearLayout>(R.id.rail)
+        val backRow = findViewById<View>(R.id.catBackRow)
+        val big = findViewById<com.google.android.material.button.MaterialButton>(R.id.catBig)
+        val grid = findViewById<RecyclerView>(R.id.catGrid)
+        chipsScroll.visibility = if (design == 0) View.VISIBLE else View.GONE
+        railScroll.visibility = if (design == 1) View.VISIBLE else View.GONE
+        big.visibility = if (design == 3) View.VISIBLE else View.GONE
+        val tilesMode = design == 2 && !picked && search.text.isNullOrBlank()
+        backRow.visibility = if (design == 2 && !tilesMode) View.VISIBLE else View.GONE
+        grid.visibility = if (tilesMode) View.VISIBLE else View.GONE
+        list.visibility = if (tilesMode) View.GONE else View.VISIBLE
+        when (design) {
+            0 -> {
+                chips.removeAllViews()
+                opts.forEach { o ->
+                    val on = o.id == selectedCategory
+                    chips.addView(com.google.android.material.chip.Chip(this).apply {
+                        text = "${label(o)}  ${o.count}"
+                        isCheckable = true; isChecked = on; isCheckedIconVisible = false
+                        chipBackgroundColor = Design.tint(if (on) Design.ACCENT else c.surface2)
+                        setTextColor(0xFFFFFFFF.toInt())
+                        setOnClickListener { choose(o.id) }
+                    })
+                }
+            }
+            1 -> {
+                railScroll.setBackgroundColor(c.surface2)
+                rail.removeAllViews()
+                rail.addView(TextView(this).apply {
+                    text = "KATEGORIEN"; textSize = 11f; setTextColor(c.muted); setPadding((8 * d).toInt(), (4 * d).toInt(), 0, (6 * d).toInt())
+                })
+                opts.forEach { o ->
+                    val on = o.id == selectedCategory
+                    rail.addView(TextView(this).apply {
+                        text = "${label(o)}\n${o.count}"
+                        textSize = 13f
+                        setTextColor(0xFFFFFFFF.toInt())
+                        minHeight = (48 * d).toInt()
+                        gravity = android.view.Gravity.CENTER_VERTICAL
+                        setPadding((10 * d).toInt(), (6 * d).toInt(), (8 * d).toInt(), (6 * d).toInt())
+                        if (on) { background = Design.rounded(Design.ACCENT, 10f, this@MainActivity); setTypeface(typeface, android.graphics.Typeface.BOLD) }
+                        else setBackgroundResource(android.R.drawable.list_selector_background)
+                        isClickable = true
+                        setOnClickListener { choose(o.id) }
+                    }, android.widget.LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = (2 * d).toInt() })
+                }
+            }
+            2 -> {
+                findViewById<TextView>(R.id.catTitle).text = cur?.let { label(it) } ?: ""
+                grid.adapter = TileAdapter(opts, c) { choose(it) }
+            }
+            3 -> {
+                big.text = "${cur?.let { label(it) } ?: ""}  ▾"
+                big.strokeColor = Design.tint(Design.ACCENT)
+                big.setTextColor(0xFFFFFFFF.toInt())
+            }
+        }
+    }
+
+    /** Design D: Kategorien als Blatt von unten, mit Suche. */
+    private fun showCategorySheet() {
+        val d = resources.displayMetrics.density
+        val c = Design.colors(design)
+        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+        val box = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding((16 * d).toInt(), (8 * d).toInt(), (16 * d).toInt(), (16 * d).toInt())
+            setBackgroundColor(c.surface2)
+        }
+        box.addView(TextView(this).apply { text = "Kategorie wählen"; textSize = 20f; setTypeface(typeface, android.graphics.Typeface.BOLD); setTextColor(0xFFFFFFFF.toInt()); setPadding(0, 0, 0, (8 * d).toInt()) })
+        val q = EditText(this).apply { hint = "Kategorie suchen …"; isSingleLine = true; background = Design.rounded(c.surface, 12f, this@MainActivity); setPadding((14 * d).toInt(), 0, (14 * d).toInt(), 0) }
+        box.addView(q, android.widget.LinearLayout.LayoutParams(-1, (48 * d).toInt()))
+        val lv = android.widget.ListView(this)
+        box.addView(lv, android.widget.LinearLayout.LayoutParams(-1, (resources.displayMetrics.heightPixels * 0.55).toInt()))
+        fun fill() {
+            val f = q.text.toString().trim().lowercase()
+            val shown = opts.filter { f.isEmpty() || it.label.lowercase().contains(f) }
+            lv.adapter = object : ArrayAdapter<CatOpt>(this, android.R.layout.simple_list_item_1, shown) {
+                override fun getView(pos: Int, cv: View?, parent: android.view.ViewGroup): View {
+                    val v = super.getView(pos, cv, parent) as TextView
+                    val o = shown[pos]
+                    v.text = "${label(o)}   ·  ${o.count}"
+                    v.setTextColor(0xFFFFFFFF.toInt())
+                    if (o.id == selectedCategory) v.background = Design.rounded(Design.ACCENT, 12f, this@MainActivity) else v.background = null
+                    return v
+                }
+            }
+            lv.setOnItemClickListener { _, _, pos, _ -> sheet.dismiss(); choose(shown[pos].id) }
+        }
+        q.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun afterTextChanged(s: Editable?) { fill() }
+        })
+        fill()
+        sheet.setContentView(box)
+        sheet.show()
+    }
+
+    /** Design C: Kategorie-Kacheln. */
+    private inner class TileAdapter(val items: List<CatOpt>, val c: Design.Colors, val onPick: (String?) -> Unit) :
+        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        override fun getItemCount() = items.size
+        override fun onCreateViewHolder(parent: android.view.ViewGroup, type: Int): RecyclerView.ViewHolder {
+            val d = parent.resources.displayMetrics.density
+            val v = android.widget.LinearLayout(parent.context).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                setPadding((14 * d).toInt(), (12 * d).toInt(), (14 * d).toInt(), (12 * d).toInt())
+                layoutParams = RecyclerView.LayoutParams(-1, (100 * d).toInt()).apply { setMargins((5 * d).toInt(), (5 * d).toInt(), (5 * d).toInt(), (5 * d).toInt()) }
+                isClickable = true
+                addView(TextView(parent.context).apply { textSize = 16f; setTypeface(typeface, android.graphics.Typeface.BOLD); maxLines = 2 }, android.widget.LinearLayout.LayoutParams(-1, 0, 1f))
+                addView(TextView(parent.context).apply { textSize = 12f })
+            }
+            return object : RecyclerView.ViewHolder(v) {}
+        }
+        override fun onBindViewHolder(h: RecyclerView.ViewHolder, pos: Int) {
+            val o = items[pos]
+            val v = h.itemView as android.widget.LinearLayout
+            val fav = o.id == CAT_FAV
+            v.background = Design.rounded(if (fav) 0xFFF2B807.toInt() else c.surface, 18f, this@MainActivity)
+            val fg = if (fav) 0xFF1B1F27.toInt() else 0xFFFFFFFF.toInt()
+            (v.getChildAt(0) as TextView).apply { text = label(o); setTextColor(fg) }
+            (v.getChildAt(1) as TextView).apply { text = "${o.count}"; setTextColor(if (fav) fg else c.muted) }
+            v.setOnClickListener { onPick(o.id) }
+        }
     }
 
     /** Wendet Filter + Sortierung an und zeigt die Liste. */

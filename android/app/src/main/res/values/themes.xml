@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="brand">#1E88E5</color>
+    <color name="brand">#D81B21</color>
     <color name="icon_bg">#211E1E</color>
-    <color name="brand_dark">#0D47A1</color>
+    <color name="brand_dark">#8F1216</color>
 
-    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="AppTheme" parent="Theme.Material3.Dark.NoActionBar">
         <item name="colorPrimary">@color/brand</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#8F1216</item>
+        <item name="colorOnPrimaryContainer">#FFFFFF</item>
+        <item name="android:windowBackground">#1A1717</item>
         <item name="colorSecondary">@color/brand_dark</item>
     </style>
 

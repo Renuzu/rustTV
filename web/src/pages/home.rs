@@ -171,6 +171,19 @@ pub fn home_page() -> Html {
             </TopBar>
             <UpdateBanner />
             <VpnButton />
+            <div class="design-chips">
+                <span class="muted small">{ t("Design:", "Design:") }</span>
+                { for store::DESIGNS.iter().enumerate().map(|(i, (de, en))| {
+                    let tick = tick.clone();
+                    let on = settings.design as usize == i;
+                    html!{ <button class={classes!("chip", on.then_some("on"))} onclick={move |_| {
+                        let mut s = store::settings();
+                        s.design = i as u8;
+                        store::save_settings(&s);
+                        tick.set(tick.wrapping_add(1));
+                    }}>{ t(de, en) }</button> }
+                }) }
+            </div>
             <input class="search" type="search" placeholder={ t("🔍 Überall suchen …", "🔍 Search everything …") }
                 value={(*query).clone()} oninput={ let q = query.clone(); move |e: InputEvent| q.set(input_value_i(&e)) } />
             if !q.is_empty() && q.chars().count() >= 2 {
