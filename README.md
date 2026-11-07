@@ -126,8 +126,10 @@ play, try *Settings → Live TV format → HLS* or copy the stream link (⋮ →
 *Downloader* app). rustTV then shows up in the TV's app row and works with the remote:
 arrows + OK to navigate, up/down switches channels while watching, Back goes back.
 
-**Samsung TV (Tizen):** `rustTV-samsung-tv.wgt` is a stand-alone app – no server needed,
-you log in with your provider data on the TV, just like on the phone.
+**Samsung TV (Tizen):** `rustTV-samsung-tv.wgt` is a separate, lightweight TV app made for the
+remote control (plain JavaScript, Samsung's own video player) – no server needed, you log in with
+your provider data on the TV. Live TV with programme guide, movies, series by season, favourites,
+history and search. Not in the TV app (yet): bouquets, PIN vault, multi-view, VPN.
 
 1. Download `rustTV-samsung-tv.wgt` from the latest release.
 2. Switch on developer mode on the TV and install the file with

@@ -27,11 +27,10 @@ jobs:
         with:
           name: web-dist
           path: web/dist
-      - name: Build Samsung TV app (stand-alone, Tizen .wgt)
+      - name: Build Samsung TV app (Tizen .wgt from tizen/tv)
         run: |
-          cd web && trunk build tizen.html --release --dist ../dist-tizen --public-url ./ && cd ..
           mkdir -p tvbin
-          python3 tizen/build.py dist-tizen "$(grep -m1 '^version' Cargo.toml | cut -d '"' -f2)" tvbin/rustTV-samsung-tv.wgt
+          python3 tizen/build.py "$(grep -m1 '^version' Cargo.toml | cut -d '"' -f2)" tvbin/rustTV-samsung-tv.wgt
       - uses: actions/upload-artifact@v4
         with:
           name: bin-tizen
