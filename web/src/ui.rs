@@ -61,10 +61,11 @@ pub fn use_ui() -> Ui {
     use_context::<Ui>().expect("ui context")
 }
 
+/// Value of the element that fired the event (works for <input> and <select>).
 pub fn input_value(e: &Event) -> String {
     e.target()
-        .and_then(|t| t.dyn_into::<HtmlInputElement>().ok())
-        .map(|i| i.value())
+        .and_then(|t| js_sys::Reflect::get(&t, &"value".into()).ok())
+        .and_then(|v| v.as_string())
         .unwrap_or_default()
 }
 pub fn input_value_i(e: &InputEvent) -> String {
