@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1920" />
+<title>rustTV</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1a1717; color: #f2eded; font-family: sans-serif; }
+  #setup { display: none; max-width: 1100px; margin: 0 auto; padding: 120px 40px; }
+  h1 { font-size: 72px; margin: 0 0 20px; } h1 span { color: #d81b21; }
+  p { font-size: 30px; color: #c9c2c2; line-height: 1.4; }
+  input[type=text] { width: 100%; box-sizing: border-box; font-size: 40px; padding: 20px 24px; border-radius: 16px;
+    border: 3px solid #3a3434; background: #262222; color: #fff; margin: 20px 0; }
+  label { font-size: 30px; display: flex; gap: 16px; align-items: center; margin: 10px 0 30px; }
+  input[type=checkbox] { width: 36px; height: 36px; }
+  button { font-size: 36px; padding: 20px 48px; border-radius: 16px; border: 0; background: #d81b21; color: #fff; margin-right: 20px; }
+  button.ghost { background: #3a3434; }
+  :focus { outline: 5px solid #fff; outline-offset: 4px; }
+  #msg { color: #ff8a8d; min-height: 40px; }
+  #wait { display: none; text-align: center; padding-top: 300px; font-size: 40px; }
+  #frame { display: none; position: fixed; inset: 0; width: 100%; height: 100%; border: 0; }
+</style>
+</head>
+<body>
+<div id="wait">rustTV verbindet mit <b id="waitUrl"></b> …<br /><br />
+  <button id="change" class="ghost">Adresse ändern</button></div>
+
+<div id="setup">
+  <h1>rust<span>TV</span></h1>
+  <p>Gib die Adresse deines rustTV-Servers ein (z.&nbsp;B. der Proxmox- oder Docker-Server im Heimnetz).<br />
+     Beispiel: <b>http://192.168.1.50:8080</b></p>
+  <input id="url" type="text" placeholder="http://192.168.1.50:8080" />
+  <label><input id="framed" type="checkbox" /> Rahmen-Modus (nur ausprobieren, falls es ohne nicht klappt)</label>
+  <div id="msg"></div>
+  <button id="go">Verbinden</button>
+</div>
+
+<iframe id="frame" allow="autoplay; fullscreen"></iframe>
+
+<script>
+(function () {
+  "use strict";
+  var KEY = "rustv.tv.server", FKEY = "rustv.tv.framed";
+  var $ = function (id) { return document.getElementById(id); };
+  var timer = null;
+
+  try { tizen.tvinputdevice.registerKey("MediaPlayPause"); } catch (e) {}
+
+  function clean(u) {
+    u = (u || "").trim();
+    if (!u) return "";
+    if (!/^https?:\/\//i.test(u)) u = "http://" + u;
+    return u.replace(/\/+$/, "");
+  }
+
+  function showSetup(msg) {
+    clearTimeout(timer);
+    $("wait").style.display = "none";
+    $("frame").style.display = "none";
+    $("setup").style.display = "block";
+    $("url").value = localStorage.getItem(KEY) || "";
+    $("framed").checked = localStorage.getItem(FKEY) === "1";
+    $("msg").textContent = msg || "";
+    $("url").focus();
+  }
+
+  function open(url) {
+    $("setup").style.display = "none";
+    $("wait").style.display = "block";
+    $("waitUrl").textContent = url;
+    $("change").focus();
+    // check the server first, so a wrong address leads back here
+    var x = new XMLHttpRequest();
+    x.open("GET", url + "/api/info");
+    x.timeout = 8000;
+    x.onload = function () {
+      if (x.status !== 200) { showSetup("Server antwortet nicht richtig (" + x.status + ")."); return; }
+      timer = setTimeout(function () {
+        if (localStorage.getItem(FKEY) === "1") {
+          $("wait").style.display = "none";
+          $("frame").style.display = "block";
+          $("frame").src = url + "/";
+          $("frame").focus();
+        } else {
+          location.href = url + "/";
+        }
+      }, 1500);
+    };
+    x.onerror = x.ontimeout = function () { showSetup("Keine Verbindung zu " + url + ". Adresse prüfen."); };
+    x.send();
+  }
+
+  $("go").onclick = function () {
+    var u = clean($("url").value);
+    if (!u) { $("msg").textContent = "Bitte eine Adresse eingeben."; return; }
+    localStorage.setItem(KEY, u);
+    localStorage.setItem(FKEY, $("framed").checked ? "1" : "0");
+    open(u);
+  };
+  $("change").onclick = function () { showSetup(""); };
+
+  // simple remote-control navigation for this page
+  document.addEventListener("keydown", function (e) {
+    var order = [$("url"), $("framed"), $("go")];
+    if ($("setup").style.display === "block") {
+      var i = order.indexOf(document.activeElement);
+      if (e.keyCode === 40) { e.preventDefault(); order[Math.min(i + 1, order.length - 1)].focus(); }
+      if (e.keyCode === 38) { e.preventDefault(); order[Math.max(i - 1, 0)].focus(); }
+      if (e.keyCode === 13 && document.activeElement === $("url")) { e.preventDefault(); $("go").click(); }
+    }
+    if (e.keyCode === 10009) { // Return
+      if ($("setup").style.display === "block" && localStorage.getItem(KEY)) { open(localStorage.getItem(KEY)); return; }
+      try { tizen.application.getCurrentApplication().exit(); } catch (x) {}
+    }
+  });
+
+  var saved = localStorage.getItem(KEY);
+  if (saved) open(saved); else showSetup("");
+})();
+</script>
+</body>
+</html>

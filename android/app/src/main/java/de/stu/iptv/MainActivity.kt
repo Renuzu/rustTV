@@ -348,6 +348,8 @@ class MainActivity : AppCompatActivity() {
                         if (on) { background = Design.rounded(Design.ACCENT, 10f, this@MainActivity); setTypeface(typeface, android.graphics.Typeface.BOLD) }
                         else setBackgroundResource(android.R.drawable.list_selector_background)
                         isClickable = true
+                        isFocusable = true
+                        foreground = androidx.core.content.ContextCompat.getDrawable(this@MainActivity, R.drawable.focus_ring)
                         setOnClickListener { choose(o.id) }
                     }, android.widget.LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = (2 * d).toInt() })
                 }
@@ -415,6 +417,8 @@ class MainActivity : AppCompatActivity() {
                 setPadding((14 * d).toInt(), (12 * d).toInt(), (14 * d).toInt(), (12 * d).toInt())
                 layoutParams = RecyclerView.LayoutParams(-1, (100 * d).toInt()).apply { setMargins((5 * d).toInt(), (5 * d).toInt(), (5 * d).toInt(), (5 * d).toInt()) }
                 isClickable = true
+                isFocusable = true
+                foreground = androidx.core.content.ContextCompat.getDrawable(parent.context, R.drawable.focus_ring)
                 addView(TextView(parent.context).apply { textSize = 16f; setTypeface(typeface, android.graphics.Typeface.BOLD); maxLines = 2 }, android.widget.LinearLayout.LayoutParams(-1, 0, 1f))
                 addView(TextView(parent.context).apply { textSize = 12f })
             }

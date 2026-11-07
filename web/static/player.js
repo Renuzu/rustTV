@@ -297,6 +297,8 @@
   window.rustvPlayer = {
     start: start,
     stop: function () { destroy(); box = null; },
+    active: function () { return !!(video && box && document.body.contains(box)); },
+    box: function () { return box; },
     attachGestures: function (layer) { gestures(layer); },
     setCallbacks: function (zap, ended, error, stop) {
       cbs = { zap: zap, ended: ended, error: error, stop: stop };

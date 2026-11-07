@@ -225,7 +225,7 @@ pub fn entry_card(p: &CardProps) -> Html {
     let sub = if e.archive { format!("⏪ {sub}") } else { sub };
     if p.grid {
         html! {
-            <div class={classes!("card", "poster", p.square.then_some("square"), p.active.then_some("active"))} onclick={click} oncontextmenu={ctx}>
+            <div class={classes!("card", "poster", p.square.then_some("square"), p.active.then_some("active"))} tabindex="0" onclick={click} oncontextmenu={ctx}>
                 <div class="img">
                     if let Some(s) = src { <img loading="lazy" src={s} alt="" /> } else { <span class="noimg">{"🎬"}</span> }
                     { fav_btn }{ menu_btn }
@@ -236,7 +236,7 @@ pub fn entry_card(p: &CardProps) -> Html {
         }
     } else {
         html! {
-            <div class={classes!("card", "row", p.active.then_some("active"))} onclick={click} oncontextmenu={ctx}>
+            <div class={classes!("card", "row", p.active.then_some("active"))} tabindex="0" onclick={click} oncontextmenu={ctx}>
                 if p.logo {
                     <div class="logo">
                         if let Some(s) = src { <img loading="lazy" src={s} alt="" /> } else { <span>{"▶"}</span> }

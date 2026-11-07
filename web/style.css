@@ -233,3 +233,8 @@ html[class^=d] a.tile { color: #fff; }
 html[class^=d] .tab { color: var(--mut); }
 html[class^=d] .tab.active, html.d2 .tab { color: var(--fg); }
 html.d2 .tab.active { color: #fff; }
+
+/* remote control / keyboard focus */
+:focus-visible { outline: 3px solid #ff3b40; outline-offset: 2px; border-radius: 10px; }
+.card:focus-visible { outline-offset: -3px; background: var(--bg2, #222); }
+.tile:focus-visible { outline: 4px solid #fff; transform: scale(1.02); }

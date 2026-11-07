@@ -5,7 +5,7 @@
     android:layout_marginBottom="12dp"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="?attr/selectableItemBackground">
+    android:foreground="@drawable/focus_ring">
 
     <!-- Hintergrund: Farbverlauf + Collage aus Covern -->
     <LinearLayout

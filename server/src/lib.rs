@@ -164,13 +164,14 @@ async fn require_auth(State(st): State<Shared>, req: Request, next: Next) -> Res
 }
 
 async fn info(State(st): State<Shared>, headers: HeaderMap) -> impl IntoResponse {
-    Json(serde_json::json!({
+    // readable from other origins (the Samsung TV app checks the address with it)
+    ([(axum::http::header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")], Json(serde_json::json!({
         "name": "rustTV",
         "version": VERSION,
         "mode": st.cfg.mode,
         "auth_required": st.token.is_some(),
         "authed": is_authed(&st, &headers),
-    }))
+    })))
 }
 
 #[derive(Deserialize)]

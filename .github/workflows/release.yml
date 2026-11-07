@@ -156,6 +156,10 @@ jobs:
         run: if [ -f android/dist/rustv-android.apk ]; then cp android/dist/rustv-android.apk bin/; fi
       - id: v
         run: echo "version=$(grep -m1 '^version' Cargo.toml | cut -d '"' -f2)" >> "$GITHUB_OUTPUT"
+      - name: Package Samsung TV app (Tizen .wgt)
+        run: |
+          sed -i 's/version="1.0.0"/version="${{ steps.v.outputs.version }}"/' tizen/config.xml
+          (cd tizen && zip -r -X ../bin/rustTV-samsung-tv.wgt config.xml index.html icon.png)
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.v.outputs.version }}

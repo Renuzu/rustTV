@@ -119,6 +119,25 @@ play, try *Settings → Live TV format → HLS* or copy the stream link (⋮ →
 
 ---
 
+## TVs (Android TV / Samsung)
+
+**Android TV / Google TV / Fire TV:** install `rustv-android.apk` from the
+[latest release](https://github.com/Renuzu/rustTV/releases/latest) (e.g. with the
+*Downloader* app). rustTV then shows up in the TV's app row and works with the remote:
+arrows + OK to navigate, up/down switches channels while watching, Back goes back.
+
+**Samsung TV (Tizen):** the Samsung app `rustTV-samsung-tv.wgt` is a small launcher that
+opens your own rustTV server (Docker / Proxmox, see *Installation*) on the TV. You need that
+server running in your home network.
+
+1. Download `rustTV-samsung-tv.wgt` from the latest release.
+2. Install it with [Apps2Samsung](https://github.com/Apps2Samsung/Apps2Samsung) (PC or Android
+   phone; it handles developer mode and the Samsung certificate) or with Tizen Studio.
+3. Start rustTV on the TV and enter your server address, e.g. `http://192.168.1.50:8080`.
+4. If the page does not open, press *Adresse ändern* and try again with *Rahmen-Modus* on.
+
+Sideloading on Samsung TVs is not officially supported by Samsung and depends on the TV model.
+
 ## Configuration
 
 | Variable            | Default         | Description                                                      |

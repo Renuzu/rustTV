@@ -588,6 +588,14 @@ class PlayerActivity : AppCompatActivity() {
             KeyEvent.KEYCODE_CHANNEL_DOWN, KeyEvent.KEYCODE_PAGE_DOWN -> { switchBy(-1); return true }
             KeyEvent.KEYCODE_LAST_CHANNEL -> { recall(); return true }
         }
+        // Fernbedienung: bei Live-TV ohne sichtbare Steuerleiste hoch/runter = Sender wechseln
+        if (isLive && !view.isControllerFullyVisible) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_UP -> { switchBy(1); return true }
+                KeyEvent.KEYCODE_DPAD_DOWN -> { switchBy(-1); return true }
+                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> { view.showController(); return true }
+            }
+        }
         return super.onKeyDown(keyCode, event)
     }
 
