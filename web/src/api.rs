@@ -105,13 +105,31 @@ fn s(v: &Value, key: &str) -> Option<String> {
     }
 }
 
+/// True in the stand-alone TV app (Samsung): no rustTV server, the app talks
+/// to the provider directly. Set by `direct.js` (`window.rustvDirect = true`).
+pub fn direct() -> bool {
+    web_sys::window()
+        .and_then(|w| js_sys::Reflect::get(&w, &"rustvDirect".into()).ok())
+        .map(|v| v.is_truthy())
+        .unwrap_or(false)
+}
+
 async fn call(acc: &Account, action: Option<&str>, extra: &str) -> Result<Value, String> {
-    let mut url = format!(
-        "/api/xtream?server={}&username={}&password={}",
-        enc(&acc.server),
-        enc(&acc.user),
-        enc(&acc.pass)
-    );
+    let mut url = if direct() {
+        format!(
+            "{}/player_api.php?username={}&password={}",
+            base(acc),
+            enc(&acc.user),
+            enc(&acc.pass)
+        )
+    } else {
+        format!(
+            "/api/xtream?server={}&username={}&password={}",
+            enc(&acc.server),
+            enc(&acc.user),
+            enc(&acc.pass)
+        )
+    };
     if let Some(a) = action {
         url.push_str("&action=");
         url.push_str(a);
@@ -404,13 +422,16 @@ pub fn timeshift_url(acc: &Account, stream_id: &str, p: &Programme) -> String {
 
 /// Route a provider URL through the rustTV server.
 pub fn proxied(url: &str) -> String {
+    if direct() {
+        return url.to_string();
+    }
     format!("/api/p?u={}", enc(url))
 }
 
 /// Image URL usable on HTTPS pages.
 pub fn img(u: &Option<String>) -> Option<String> {
     let u = u.as_ref()?;
-    if u.starts_with("https://") {
+    if u.starts_with("https://") || (direct() && u.starts_with("http://")) {
         Some(u.clone())
     } else if u.starts_with("http://") {
         Some(proxied(u))

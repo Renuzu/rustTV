@@ -78,6 +78,16 @@ fn app() -> Html {
         let info = info.clone();
         use_effect_with((), move |_| {
             wasm_bindgen_futures::spawn_local(async move {
+                if api::direct() {
+                    // stand-alone TV app: no server
+                    info.set(Some(ServerInfo {
+                        version: env!("CARGO_PKG_VERSION").into(),
+                        mode: "tv".into(),
+                        auth_required: false,
+                        authed: true,
+                    }));
+                    return;
+                }
                 let i = match Request::get("/api/info").send().await {
                     Ok(r) => r.json::<ServerInfo>().await.unwrap_or_default(),
                     Err(_) => ServerInfo::default(),
@@ -119,10 +129,18 @@ fn app() -> Html {
     html! {
         <ContextProvider<Ui> context={ui.clone()}>
             <ContextProvider<ServerInfo> context={(*info).clone().unwrap_or_default()}>
-                <BrowserRouter>
-                    { content }
-                    if let Some(d) = (*ui.dialog).clone() { { d } }
-                </BrowserRouter>
+                if api::direct() {
+                    // the TV app runs from a local file: routes live in the #hash
+                    <HashRouter>
+                        { content }
+                        if let Some(d) = (*ui.dialog).clone() { { d } }
+                    </HashRouter>
+                } else {
+                    <BrowserRouter>
+                        { content }
+                        if let Some(d) = (*ui.dialog).clone() { { d } }
+                    </BrowserRouter>
+                }
                 if let Some(msg) = (*ui.toast).clone() { <div class="toast">{ msg }</div> }
             </ContextProvider<ServerInfo>>
         </ContextProvider<Ui>>

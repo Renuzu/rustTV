@@ -27,6 +27,15 @@ jobs:
         with:
           name: web-dist
           path: web/dist
+      - name: Build Samsung TV app (stand-alone, Tizen .wgt)
+        run: |
+          cd web && trunk build tizen.html --release --dist ../dist-tizen --public-url ./ && cd ..
+          mkdir -p tvbin
+          python3 tizen/build.py dist-tizen "$(grep -m1 '^version' Cargo.toml | cut -d '"' -f2)" tvbin/rustTV-samsung-tv.wgt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bin-tizen
+          path: tvbin/rustTV-samsung-tv.wgt
 
   linux:
     needs: web
@@ -143,7 +152,7 @@ jobs:
             ghcr.io/renuzu/rusttv:${{ steps.v.outputs.version }}
 
   release:
-    needs: [linux, windows, macos]
+    needs: [web, linux, windows, macos]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -156,10 +165,6 @@ jobs:
         run: if [ -f android/dist/rustv-android.apk ]; then cp android/dist/rustv-android.apk bin/; fi
       - id: v
         run: echo "version=$(grep -m1 '^version' Cargo.toml | cut -d '"' -f2)" >> "$GITHUB_OUTPUT"
-      - name: Package Samsung TV app (Tizen .wgt)
-        run: |
-          sed -i 's/version="1.0.0"/version="${{ steps.v.outputs.version }}"/' tizen/config.xml
-          (cd tizen && zip -r -X ../bin/rustTV-samsung-tv.wgt config.xml index.html style.css app.js icon.png)
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.v.outputs.version }}

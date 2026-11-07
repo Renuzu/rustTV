@@ -276,7 +276,7 @@ pub fn settings_page() -> Html {
             { toggle(t("Logos/Cover anzeigen", "Show logos/covers"), "", |x| x.show_logos, |x, v| x.show_logos = v, false) }
             { toggle(t("Favoriten zuerst", "Favorites first"), "", |x| x.fav_first, |x, v| x.fav_first = v, false) }
 
-            <VpnSection desktop={info.mode == "desktop"} />
+            if info.mode != "tv" { <VpnSection desktop={info.mode == "desktop"} /> }
 
             <h2>{ t("Jugendschutz", "Parental control") }</h2>
             <button class="opt-btn" onclick={set_pin}>{ if s.pin.is_empty() { t("PIN festlegen", "Set PIN") } else { t("PIN ändern", "Change PIN") } }</button>
