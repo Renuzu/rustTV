@@ -1,0 +1,28 @@
+[package]
+name = "rustv-web"
+description = "RusTV web app (Yew / WebAssembly, installable PWA)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+yew = { version = "0.21", features = ["csr"] }
+yew-router = "0.18"
+gloo-net = { version = "0.6", default-features = false, features = ["http", "json"] }
+gloo-storage = "0.3"
+gloo-timers = { version = "0.3", features = ["futures"] }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.22"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+  "Window", "Document", "Element", "HtmlElement", "HtmlVideoElement", "HtmlMediaElement",
+  "HtmlInputElement", "HtmlSelectElement", "HtmlAnchorElement", "Navigator", "Clipboard",
+  "Location", "Blob", "BlobPropertyBag", "Url", "File", "FileList", "Event", "KeyboardEvent",
+  "MouseEvent", "Storage", "DomTokenList",
+]

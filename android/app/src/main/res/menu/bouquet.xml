@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/b_country" android:title="Land nach oben holen (z. B. TR)" />
+    <item android:id="@+id/b_az" android:title="Alphabetisch A–Z" />
+    <item android:id="@+id/b_za" android:title="Alphabetisch Z–A" />
+    <item android:id="@+id/b_showall" android:title="Alle einblenden" />
+    <item android:id="@+id/b_hidecountry" android:title="Land komplett ausblenden" />
+    <item android:id="@+id/b_reset" android:title="Reihenfolge zurücksetzen" />
+</menu>

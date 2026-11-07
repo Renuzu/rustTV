@@ -1,0 +1,11 @@
+# Used by CI: packs the prebuilt release binary (multi-arch) into a small image.
+FROM debian:bookworm-slim
+ARG TARGETARCH
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/* \
+ && useradd -r -u 10001 rustv
+COPY bin/rustv-linux-${TARGETARCH} /usr/local/bin/rustv
+RUN chmod 755 /usr/local/bin/rustv
+USER rustv
+ENV RUSTV_BIND=0.0.0.0:8080
+EXPOSE 8080
+CMD ["rustv"]

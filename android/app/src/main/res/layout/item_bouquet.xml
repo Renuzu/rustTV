@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="60dp"
+    android:orientation="horizontal"
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp">
+
+    <ImageView
+        android:id="@+id/drag"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:contentDescription="Verschieben"
+        android:padding="10dp"
+        android:src="@drawable/ic_drag" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/sub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:alpha="0.6"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <TextView android:id="@+id/eye" android:layout_width="44dp" android:layout_height="44dp"
+        android:gravity="center" android:text="👁" android:textSize="20sp" android:contentDescription="Ein-/Ausblenden" />
+    <TextView android:id="@+id/lock" android:layout_width="44dp" android:layout_height="44dp"
+        android:gravity="center" android:text="🔒" android:textSize="20sp" android:contentDescription="Sperren" />
+    <TextView android:id="@+id/vault" android:layout_width="44dp" android:layout_height="44dp"
+        android:gravity="center" android:text="🔐" android:textSize="20sp" android:contentDescription="Tresor" />
+</LinearLayout>

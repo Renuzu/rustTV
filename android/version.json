@@ -1,0 +1,6 @@
+{
+  "versionCode": 6,
+  "versionName": "3.3",
+  "apk": "https://github.com/Renuzu/rustv/raw/main/android/dist/rustv-android.apk",
+  "notes": "Neu: Update-Hinweis mit Installation per Tipp, App heißt jetzt RusTV."
+}

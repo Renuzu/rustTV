@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/m_sort" android:title="Sortieren" app:showAsAction="always" />
+    <item android:id="@+id/m_favfirst" android:title="Favoriten zuerst" android:checkable="true" />
+    <item android:id="@+id/m_multiview" android:title="Multi-View (4 Sender)" />
+    <item android:id="@+id/m_bouquets" android:title="Bouquets verwalten" />
+    <item android:id="@+id/m_accounts" android:title="Konten" />
+    <item android:id="@+id/m_accinfo" android:title="Kontoinfo" />
+    <item android:id="@+id/m_reset_order" android:title="Eigene Reihenfolge zurücksetzen" />
+    <item android:id="@+id/m_reload" android:title="Neu laden" />
+    <item android:id="@+id/m_settings" android:title="Einstellungen" />
+</menu>

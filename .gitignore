@@ -1,0 +1,11 @@
+/target
+/web/dist
+/desktop/gen
+*.jks
+*.keystore
+keystore.properties
+/android/.gradle
+/android/build
+/android/app/build
+/android/local.properties
+.DS_Store

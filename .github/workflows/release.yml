@@ -1,0 +1,158 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  web:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Install trunk
+        run: command -v trunk || cargo install trunk --locked
+      - run: cd web && trunk build --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+
+  linux:
+    needs: web
+    strategy:
+      matrix:
+        include:
+          - { os: ubuntu-22.04, arch: amd64 }
+          - { os: ubuntu-22.04-arm, arch: arm64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.arch }}
+      - run: cargo build --release -p rustv-server
+      - run: mkdir -p bin && cp target/release/rustv bin/rustv-linux-${{ matrix.arch }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.arch }}
+          path: bin/
+
+  windows:
+    needs: web
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install -g @tauri-apps/cli@^2
+      - name: Build installer
+        working-directory: desktop
+        run: tauri build --ci
+      - name: Collect installer
+        shell: bash
+        run: |
+          mkdir -p bin
+          VERSION=$(grep -m1 '^version' Cargo.toml | cut -d '"' -f2)
+          cp target/release/bundle/nsis/*-setup.exe "bin/RusTV-${VERSION}-windows-setup.exe"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bin-windows
+          path: bin/
+
+  macos:
+    needs: web
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install -g @tauri-apps/cli@^2
+      - name: Build app (Intel + Apple Silicon)
+        working-directory: desktop
+        run: tauri build --ci --target universal-apple-darwin --bundles dmg
+      - name: Collect dmg
+        run: |
+          mkdir -p bin
+          VERSION=$(grep -m1 '^version' Cargo.toml | cut -d '"' -f2)
+          cp target/universal-apple-darwin/release/bundle/dmg/*.dmg "bin/RusTV-${VERSION}-macos.dmg"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bin-macos
+          path: bin/
+
+  docker:
+    needs: linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bin-*64
+          path: bin
+          merge-multiple: true
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: v
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.release
+          platforms: linux/amd64,linux/arm64
+          push: true
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          tags: |
+            ghcr.io/renuzu/rustv:latest
+            ghcr.io/renuzu/rustv:${{ steps.v.outputs.version }}
+
+  release:
+    needs: [linux, windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bin-*
+          path: bin
+          merge-multiple: true
+      - name: Attach Android APK if present
+        run: if [ -f android/dist/rustv-android.apk ]; then cp android/dist/rustv-android.apk bin/; fi
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: bin/*
+          generate_release_notes: true

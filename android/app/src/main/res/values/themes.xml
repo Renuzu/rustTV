@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand">#1E88E5</color>
+    <color name="icon_bg">#1F1F1F</color>
+    <color name="brand_dark">#0D47A1</color>
+
+    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/brand</item>
+        <item name="colorSecondary">@color/brand_dark</item>
+    </style>
+
+    <style name="PlayerTheme" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+</resources>

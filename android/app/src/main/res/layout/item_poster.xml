@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <de.stu.iptv.RatioImageView
+            android:id="@+id/logo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#22888888"
+            android:scaleType="centerCrop" />
+
+        <ImageView
+            android:id="@+id/fav"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="top|end"
+            android:background="@drawable/rounded_dark"
+            android:layout_margin="4dp"
+            android:contentDescription="Favorit"
+            android:padding="8dp" />
+
+        <ImageView
+            android:id="@+id/drag"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="top|start"
+            android:layout_margin="4dp"
+            android:background="@drawable/rounded_dark"
+            android:contentDescription="Verschieben"
+            android:padding="8dp"
+            android:src="@drawable/ic_drag"
+            android:tint="#FFFFFF" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/sub"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:alpha="0.6"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textSize="11sp" />
+</LinearLayout>

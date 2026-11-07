@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="Wiedergabe" app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat app:key="external" app:title="Externen Player nutzen"
+            app:summary="Statt des eingebauten Players z. B. VLC öffnen" app:defaultValue="false" app:iconSpaceReserved="false" />
+        <ListPreference app:key="live_format" app:title="Live-TV-Format" app:defaultValue="ts"
+            app:entries="@array/fmt_labels" app:entryValues="@array/fmt_values" app:useSimpleSummaryProvider="true" app:iconSpaceReserved="false" />
+        <ListPreference app:key="buffer" app:title="Puffergröße" app:defaultValue="normal"
+            app:entries="@array/buf_labels" app:entryValues="@array/buf_values" app:useSimpleSummaryProvider="true" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="resume" app:title="Filme/Folgen fortsetzen"
+            app:summary="Merkt sich, wo du aufgehört hast" app:defaultValue="true" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="auto_next" app:title="Nächste Folge automatisch"
+            app:defaultValue="true" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="auto_pip" app:title="Bild-in-Bild beim Verlassen"
+            app:summary="Video läuft im kleinen Fenster weiter, wenn du die App verlässt" app:defaultValue="false" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="start_last" app:title="Beim Start letzten Sender öffnen"
+            app:defaultValue="false" app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Gesten im Player" app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat app:key="gestures" app:title="Wisch-Gesten (alle)"
+            app:summary="Hauptschalter: aus = keine Wisch-Gesten im Player" app:defaultValue="true" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="g_bright" app:dependency="gestures" app:title="Helligkeit"
+            app:summary="Linke Bildschirmhälfte hoch/runter wischen" app:defaultValue="true" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="g_volume" app:dependency="gestures" app:title="Lautstärke"
+            app:summary="Rechte Bildschirmhälfte hoch/runter wischen" app:defaultValue="true" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="g_seek" app:dependency="gestures" app:title="Spulen"
+            app:summary="Bei Filmen/Serien seitlich wischen" app:defaultValue="true" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="swipe_zap" app:dependency="gestures" app:title="Sender wechseln"
+            app:summary="Bei Live-TV seitlich wischen" app:defaultValue="true" app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Liste" app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat app:key="poster_grid" app:title="Filme &amp; Serien als Bilder-Raster"
+            app:summary="Große Cover statt Liste" app:defaultValue="true" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="show_logos" app:title="Logos/Cover anzeigen"
+            app:defaultValue="true" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="favfirst" app:title="Favoriten zuerst"
+            app:defaultValue="true" app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Jugendschutz" app:iconSpaceReserved="false">
+        <Preference app:key="set_pin" app:title="PIN festlegen / ändern" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="auto_lock_adult" app:title="Erwachsenen-Kategorien automatisch sperren"
+            app:summary="Kategorien mit „Adult“, „XXX“, „18+“ usw. brauchen die PIN" app:defaultValue="true" app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Erweitert" app:iconSpaceReserved="false">
+        <EditTextPreference app:key="user_agent" app:title="User-Agent"
+            app:summary="Nur ändern, wenn dein Anbieter das verlangt (leer = Standard)" app:iconSpaceReserved="false" />
+        <Preference app:key="clear_cache" app:title="Senderlisten neu laden" app:iconSpaceReserved="false" />
+        <Preference app:key="check_update" app:title="Nach Updates suchen" app:iconSpaceReserved="false" />
+        <Preference app:key="version" app:title="Version" app:summary="RusTV Android 3.3" app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+</PreferenceScreen>

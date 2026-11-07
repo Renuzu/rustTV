@@ -1,0 +1,19 @@
+[workspace]
+resolver = "2"
+members = ["server", "web", "desktop"]
+default-members = ["server", "web", "desktop"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/Renuzu/rustv"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true
+
+[profile.release.package.rustv-web]
+opt-level = "z"

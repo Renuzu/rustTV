@@ -1,0 +1,12 @@
+services:
+  rustv:
+    image: ghcr.io/renuzu/rustv:latest
+    # build: .          # uncomment to build from source instead
+    container_name: rustv
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Protect your instance – strongly recommended if reachable from the internet
+      RUSTV_PASSWORD: "change-me"
+      # RUSTV_USER_AGENT: "VLC/3.0.20"   # only if your provider requires a specific player

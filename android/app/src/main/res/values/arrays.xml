@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="fmt_labels">
+        <item>MPEG-TS (.ts) – Standard</item>
+        <item>HLS (.m3u8) – falls TS ruckelt</item>
+    </string-array>
+    <string-array name="fmt_values">
+        <item>ts</item>
+        <item>m3u8</item>
+    </string-array>
+    <string-array name="buf_labels">
+        <item>Klein – schnelleres Umschalten</item>
+        <item>Normal</item>
+        <item>Groß – weniger Ruckeln</item>
+    </string-array>
+    <string-array name="buf_values">
+        <item>small</item>
+        <item>normal</item>
+        <item>large</item>
+    </string-array>
+</resources>
