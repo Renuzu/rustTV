@@ -164,25 +164,13 @@ pub fn home_page() -> Html {
     html! {
         <div class="page">
             <TopBar title="rustTV" sub={acc.map(|a| AttrValue::from(a.name))}>
-                <Link<Route> to={Route::Bouquets { kind: "live".into() }} classes="icon" ><span title={t("Bouquets", "Bouquets")}>{"📚"}</span></Link<Route>>
-                <Link<Route> to={Route::Multi} classes="icon"><span title={t("Multi-View (4 Sender)", "Multi-view (4 channels)")}>{"▦"}</span></Link<Route>>
+                <Link<Route> to={Route::Bouquets { kind: "live".into() }} classes="chip">{ t("Bouquets", "Bouquets") }</Link<Route>>
+                <Link<Route> to={Route::Multi} classes="chip">{ t("Multi-View", "Multi-view") }</Link<Route>>
                 <Link<Route> to={Route::Accounts} classes="icon"><span title={t("Konten", "Accounts")}>{"👤"}</span></Link<Route>>
                 <Link<Route> to={Route::Settings} classes="icon"><span title={t("Einstellungen", "Settings")}>{"⚙️"}</span></Link<Route>>
             </TopBar>
             <UpdateBanner />
             <VpnButton />
-            <div class="design-chips">
-                { for store::DESIGNS.iter().enumerate().map(|(i, (de, en))| {
-                    let tick = tick.clone();
-                    let on = settings.design as usize == i;
-                    html!{ <button class={classes!("chip", on.then_some("on"))} onclick={move |_| {
-                        let mut s = store::settings();
-                        s.design = i as u8;
-                        store::save_settings(&s);
-                        tick.set(tick.wrapping_add(1));
-                    }}>{ t(de, en) }</button> }
-                }) }
-            </div>
             <input class="search" type="search" placeholder={ t("🔍 Überall suchen …", "🔍 Search everything …") }
                 value={(*query).clone()} oninput={ let q = query.clone(); move |e: InputEvent| q.set(input_value_i(&e)) } />
             if !q.is_empty() && q.chars().count() >= 2 {

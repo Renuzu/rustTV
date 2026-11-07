@@ -111,6 +111,22 @@ class MainActivity : AppCompatActivity() {
         design = store.design
         Design.apply(this, findViewById(R.id.root), toolbar)
         search.background = Design.rounded(Design.colors(design).surface2, 12f, this)
+        val dGroup = findViewById<com.google.android.material.chip.ChipGroup>(R.id.designChips)
+        Design.NAMES.forEachIndexed { i, name ->
+            dGroup.addView(com.google.android.material.chip.Chip(this).apply {
+                text = name
+                isCheckable = true; isChecked = i == design; isCheckedIconVisible = false
+                chipBackgroundColor = Design.tint(if (i == design) Design.ACCENT else Design.colors(design).surface2)
+                setTextColor(0xFFFFFFFF.toInt())
+                setOnClickListener {
+                    if (store.design != i) {
+                        store.design = i
+                        intent.putExtra("kind", kind.ordinal)
+                        recreate()
+                    }
+                }
+            })
+        }
         progress = findViewById(R.id.progress)
         empty = findViewById(R.id.empty)
         info = findViewById(R.id.info)

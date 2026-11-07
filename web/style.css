@@ -187,7 +187,7 @@ html.d0 .tabs, html.d1 .tabs, html.d3 .tabs { border-bottom-color: var(--bg2); }
 
 /* B: side rail */
 .page.with-rail { display: grid; grid-template-columns: 150px 1fr; column-gap: 12px; }
-.page.with-rail > .topbar, .page.with-rail > .tabs, .page.with-rail > p, .page.with-rail > .more-btn { grid-column: 1 / -1; }
+.page.with-rail > .topbar, .page.with-rail > .design-chips, .page.with-rail > .tabs, .page.with-rail > p, .page.with-rail > .more-btn { grid-column: 1 / -1; }
 .rail-bar { display: contents; }
 .rail { grid-row: span 50; align-self: start; position: sticky; top: 60px; max-height: calc(100vh - 70px); overflow-y: auto;
   display: flex; flex-direction: column; gap: 4px; background: #050505; border-radius: 14px; padding: 10px 6px; }
@@ -226,3 +226,10 @@ html.d2 .card.row { border-bottom: 0; background: var(--bg2); border-radius: 12p
 html.d3 .tabs .tab.active { border-color: var(--acc); }
 html.d3 .grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
 @media (max-width: 600px) { html.d3 .modal-bg { align-items: flex-end; padding: 0; } html.d3 .modal { border-radius: 24px 24px 0 0; max-width: none; } }
+a.chip { text-decoration: none; color: var(--fg) !important; }
+.topbar .chip { min-height: 36px; padding: 0 12px; font-size: 13px; }
+.actions-right { align-items: center; }
+html[class^=d] a.tile { color: #fff; }
+html[class^=d] .tab { color: var(--mut); }
+html[class^=d] .tab.active, html.d2 .tab { color: var(--fg); }
+html.d2 .tab.active { color: #fff; }

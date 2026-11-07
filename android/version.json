@@ -1,6 +1,6 @@
 {
-  "versionCode": 16,
-  "versionName": "3.13",
+  "versionCode": 17,
+  "versionName": "3.14",
   "apk": "https://github.com/Renuzu/rustTV/raw/main/android/dist/rustv-android.apk",
-  "notes": "Design-Auswahl auf der Startseite: alle 4 Chips passen jetzt besser auf den Bildschirm."
+  "notes": "Design-Auswahl jetzt in Live-TV, Filme, Serien und Tresor statt auf der Startseite."
 }

@@ -23,8 +23,8 @@ android {
         applicationId = "de.stu.iptv"
         minSdk = 26
         targetSdk = 35
-        versionCode = 16
-        versionName = "3.13"
+        versionCode = 17
+        versionName = "3.14"
     }
 
     signingConfigs {

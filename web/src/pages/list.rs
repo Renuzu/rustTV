@@ -304,8 +304,20 @@ pub fn list_page(p: &ListProps) -> Html {
     html! {
         <div class={classes!("page", (design == 1).then_some("with-rail"))}>
             <TopBar title={title} back={Some(Route::Home)}>
-                <Link<Route> to={Route::Bouquets { kind: kind.key().into() }} classes="icon"><span title="Bouquets">{"📚"}</span></Link<Route>>
+                <Link<Route> to={Route::Bouquets { kind: kind.key().into() }} classes="chip">{ t("Bouquets", "Bouquets") }</Link<Route>>
             </TopBar>
+            <div class="design-chips">
+                { for store::DESIGNS.iter().enumerate().map(|(i, (de, en))| {
+                    let refresh = refresh.clone();
+                    let on = design as usize == i;
+                    html!{ <button class={classes!("chip", on.then_some("on"))} onclick={move |_| {
+                        let mut s = store::settings();
+                        s.design = i as u8;
+                        store::save_settings(&s);
+                        refresh.emit(());
+                    }}>{ t(de, en) }</button> }
+                }) }
+            </div>
             <nav class="tabs">
                 { for Kind::ALL.iter().map(|&k| html!{
                     <Link<Route> to={tab(k)} classes={classes!("tab", (k == kind).then_some("active"))}>{ k.title() }</Link<Route>>
