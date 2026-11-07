@@ -20,15 +20,15 @@ import java.net.URL
  * version.json: {"versionCode": 7, "versionName": "3.4", "apk": "https://…/rustv-android.apk", "notes": "…"}
  */
 object Updater {
-    private const val VERSION_URL = "https://raw.githubusercontent.com/Renuzu/rustTV/main/android/version.json"
+    const val VERSION_URL = "https://raw.githubusercontent.com/Renuzu/rustTV/main/android/version.json"
     private const val PREFS = "updater"
 
-    private fun currentCode(ctx: Context): Long {
+    fun currentCode(ctx: Context): Long {
         val pi = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
         return if (Build.VERSION.SDK_INT >= 28) pi.longVersionCode else @Suppress("DEPRECATION") pi.versionCode.toLong()
     }
 
-    private fun get(url: String): HttpURLConnection {
+    fun get(url: String): HttpURLConnection {
         var u = url
         repeat(5) {
             val c = URL(u).openConnection() as HttpURLConnection

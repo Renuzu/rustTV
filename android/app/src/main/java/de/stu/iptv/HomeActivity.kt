@@ -95,13 +95,15 @@ class HomeActivity : AppCompatActivity() {
                 .putExtra("kind", Kind.LIVE.ordinal).putExtra("autostart", true))
         }
         loadAll()
-        Updater.check(this)
+        UpdateWorker.schedule(this)
+        askNotificationPermission()
         // WireGuard nur für rustTV: beim Start verbinden, wenn eingeschaltet
         if (Wg.enabled(this) && !Wg.isUp(this)) wg.start()
     }
 
     override fun onResume() {
         super.onResume()
+        Updater.check(this)   // bei jedem Öffnen (höchstens alle 5 Minuten)
         if (Kind.entries.all { Cache.entries.containsKey(it) }) showAll()
     }
 
@@ -231,5 +233,15 @@ class HomeActivity : AppCompatActivity() {
             val (k, e) = kindOf[t] ?: return@pickEntry
             open(k, listOf(e), e)
         }
+    }
+
+    /** Android 13+: Erlaubnis für die Update-Benachrichtigung (einmalig fragen). */
+    private fun askNotificationPermission() {
+        if (android.os.Build.VERSION.SDK_INT < 33) return
+        val p = getSharedPreferences("updater", MODE_PRIVATE)
+        if (p.getBoolean("asked_notify", false)) return
+        p.edit().putBoolean("asked_notify", true).apply()
+        if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED)
+            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 7)
     }
 }
