@@ -42,16 +42,80 @@
 - **Update notice** when a new version is released
 - German and English interface
 
-## Which version do I need?
+## Install on your device – quick guide
 
-| You want to …                                   | Use                                                       |
-|-------------------------------------------------|-----------------------------------------------------------|
-| Watch on iPhone/iPad, Mac, any browser          | **Server** (Docker or Proxmox) + open it in the browser   |
-| Use it on a Windows PC or Mac without any server | **Windows / Mac app** (from Releases)                    |
-| Use it on Android                               | Browser (server) **or** the Android APK from Releases     |
+All downloads are on the **[latest release page](https://github.com/Renuzu/rustTV/releases/latest)**.
+You log in with the Xtream Codes data from your own IPTV provider (server address, username, password).
 
-The server is needed for browsers because browsers block most IPTV streams (mixed content / CORS).
-rustTV's server forwards the provider's API, playlists, streams and pictures so they play everywhere.
+| Device | File | Server needed? |
+|---|---|---|
+| Android phone / tablet | `rustv-android.apk` | no |
+| Android TV / Google TV / Fire TV | `rustv-android.apk` (switches to the TV interface by itself) | no |
+| Samsung TV (Tizen) | `rustTV-samsung-tv.wgt` | no |
+| Windows PC | `rustTV-x.y.z-windows-setup.exe` | no |
+| Mac | `rustTV-x.y.z-macos.dmg` | no |
+| iPhone / iPad | – (no app; web version) | **yes** |
+| Any browser | – (web version) | **yes** |
+
+<details><summary><b>Android phone / tablet</b></summary>
+
+1. Open the release page on the phone and tap `rustv-android.apk`.
+2. When asked, allow your browser to *install unknown apps*.
+3. Open the file and tap **Install**. If Play Protect asks, choose **Install anyway**.
+4. Start rustTV and log in. Later updates are offered inside the app (*Settings → Check for updates*).
+</details>
+
+<details><summary><b>Android TV / Google TV / Fire TV</b></summary>
+
+1. Install the free app **Downloader** (Play Store / Amazon Appstore).
+2. Allow it to install apps: *Settings → Apps → Security / Unknown sources → Downloader* (wording differs per TV).
+3. In Downloader enter `github.com/Renuzu/rustTV/releases/latest`, open `rustv-android.apk` and install it.
+4. rustTV appears in the TV's app row with its own TV interface (remote control: arrows, OK, Back,
+   colour keys: red = favourite, green = sort, yellow = programme, blue = search).
+</details>
+
+<details><summary><b>Samsung TV (Tizen)</b></summary>
+
+Samsung does not allow installing apps from files directly, so a free helper is used once.
+
+1. On the TV switch on **Developer Mode**: *Home → Apps*, type `12345` on the remote (no number keys: press `123`
+   and type it on screen), switch **Developer Mode** on, enter the IP address of the PC/phone you install from,
+   restart the TV.
+2. Install [Apps2Samsung](https://github.com/Apps2Samsung/Apps2Samsung) on a PC or Android phone in the same network.
+3. Download `rustTV-samsung-tv.wgt`, choose your TV in Apps2Samsung, pick the file as custom WGT and install.
+4. Start rustTV from the TV's app list and log in.
+
+Not in the Samsung app (yet): bouquets, multi-view and VPN – use a VPN on your router instead.
+Sideloading is not officially supported by Samsung and may not work on every model.
+</details>
+
+<details><summary><b>Windows</b></summary>
+
+1. Download and run `rustTV-x.y.z-windows-setup.exe`.
+2. SmartScreen warning (the installer is not code-signed): *More info → Run anyway*.
+3. If **Smart App Control** blocks the app, it can only be switched off (*Windows Security → App & browser control*).
+4. Start rustTV and log in. New versions are announced in the app.
+</details>
+
+<details><summary><b>Mac</b></summary>
+
+1. Download `rustTV-x.y.z-macos.dmg`, open it and drag **rustTV** into *Applications*.
+2. The first start is blocked (not notarized by Apple): *System Settings → Privacy & Security → Open Anyway*.
+</details>
+
+<details><summary><b>iPhone / iPad / any browser</b></summary>
+
+Apple does not allow installing apps outside the App Store, so iPhone/iPad use the web version, which needs the
+rustTV server (Docker or Proxmox, see *Installation* below) in your network.
+
+1. Open the server address (e.g. `http://192.168.1.50:8080`) in Safari.
+2. Tap **Share → Add to Home Screen** – rustTV then opens like an app.
+</details>
+
+## Why does the browser version need a server?
+
+Browsers block most IPTV streams (mixed content / CORS). rustTV's server forwards the provider's API, playlists,
+streams and pictures so they play everywhere. The apps (Android, Samsung, Windows, Mac) do not need it.
 
 ---
 
