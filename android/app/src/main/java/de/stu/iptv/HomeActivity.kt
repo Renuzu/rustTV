@@ -69,7 +69,6 @@ class HomeActivity : AppCompatActivity() {
         // Design-Auswahl als Chips
         val dScroll = android.widget.HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false }
         val dGroup = com.google.android.material.chip.ChipGroup(this).apply { isSingleLine = true; isSingleSelection = true; isSelectionRequired = true }
-        dGroup.addView(TextView(this).apply { text = "Design:"; setTextColor(Design.colors(store.design).muted); gravity = android.view.Gravity.CENTER_VERTICAL })
         Design.NAMES.forEachIndexed { i, name ->
             val chip = designChip(name, i == store.design)
             chip.setOnClickListener { if (store.design != i) { store.design = i; recreate() } }

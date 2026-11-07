@@ -172,7 +172,6 @@ pub fn home_page() -> Html {
             <UpdateBanner />
             <VpnButton />
             <div class="design-chips">
-                <span class="muted small">{ t("Design:", "Design:") }</span>
                 { for store::DESIGNS.iter().enumerate().map(|(i, (de, en))| {
                     let tick = tick.clone();
                     let on = settings.design as usize == i;

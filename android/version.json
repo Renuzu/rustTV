@@ -1,6 +1,6 @@
 {
-  "versionCode": 15,
-  "versionName": "3.12",
+  "versionCode": 16,
+  "versionName": "3.13",
   "apk": "https://github.com/Renuzu/rustTV/raw/main/android/dist/rustv-android.apk",
-  "notes": "Neu: 4 Designs (A Chips, B Leiste, C Kacheln, D Kino) \u2013 Auswahl auf der Startseite. Kategorien sind jetzt gut sichtbar."
+  "notes": "Design-Auswahl auf der Startseite: alle 4 Chips passen jetzt besser auf den Bildschirm."
 }
