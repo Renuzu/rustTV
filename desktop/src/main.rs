@@ -1,4 +1,4 @@
-//! RusTV for Windows and macOS: runs the RusTV server inside the app on 127.0.0.1
+//! ruSTv for Windows and macOS: runs the ruSTv server inside the app on 127.0.0.1
 //! and shows the web app in a native window. No separate server needed.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
@@ -31,12 +31,12 @@ fn main() {
     tauri::Builder::default()
         .setup(move |app| {
             tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::External(url.clone()))
-                .title("RusTV")
+                .title("ruSTv")
                 .inner_size(1280.0, 800.0)
                 .min_inner_size(480.0, 360.0)
                 .build()?;
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running RusTV");
+        .expect("error while running ruSTv");
 }

@@ -27,6 +27,8 @@
             app:summary="Rechte Bildschirmhälfte hoch/runter wischen" app:defaultValue="true" app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat app:key="g_seek" app:dependency="gestures" app:title="Spulen"
             app:summary="Bei Filmen/Serien seitlich wischen" app:defaultValue="true" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="pinch_zoom" app:title="Zoom mit zwei Fingern"
+            app:summary="Bild mit zwei Fingern vergrößern/verkleinern (Bildformat → Zoom zurücksetzen)" app:defaultValue="true" app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat app:key="swipe_zap" app:dependency="gestures" app:title="Sender wechseln"
             app:summary="Bei Live-TV seitlich wischen" app:defaultValue="true" app:iconSpaceReserved="false" />
     </PreferenceCategory>
@@ -51,6 +53,6 @@
             app:summary="Nur ändern, wenn dein Anbieter das verlangt (leer = Standard)" app:iconSpaceReserved="false" />
         <Preference app:key="clear_cache" app:title="Senderlisten neu laden" app:iconSpaceReserved="false" />
         <Preference app:key="check_update" app:title="Nach Updates suchen" app:iconSpaceReserved="false" />
-        <Preference app:key="version" app:title="Version" app:summary="RusTV Android 3.3" app:iconSpaceReserved="false" />
+        <Preference app:key="version" app:title="Version" app:summary="ruSTv Android 3.4" app:iconSpaceReserved="false" />
     </PreferenceCategory>
 </PreferenceScreen>

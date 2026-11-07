@@ -3427,7 +3427,7 @@ dependencies = [
 
 [[package]]
 name = "rustv-desktop"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "rustv-server",
  "tauri",
@@ -3437,7 +3437,7 @@ dependencies = [
 
 [[package]]
 name = "rustv-server"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "axum",
  "futures-util",
@@ -3457,7 +3457,7 @@ dependencies = [
 
 [[package]]
 name = "rustv-web"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "base64 0.22.1",
  "gloo-net 0.6.0",

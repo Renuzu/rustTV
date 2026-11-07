@@ -101,7 +101,7 @@ fn app() -> Html {
         }
         Some(_) if !*has_account => {
             let h = has_account.clone();
-            html! { <div class="page narrow"><h1 class="brand">{"RusTV"}</h1><AccountForm first={true} on_done={Callback::from(move |_| h.set(true))} /></div> }
+            html! { <div class="page narrow"><h1 class="brand">{"ruSTv"}</h1><AccountForm first={true} on_done={Callback::from(move |_| h.set(true))} /></div> }
         }
         Some(_) => html! { <Switch<Route> render={switch} /> },
     };

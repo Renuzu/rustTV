@@ -1,9 +1,9 @@
-// RusTV player glue: picks the right engine (mpegts.js / hls.js / native),
+// ruSTv player glue: picks the right engine (mpegts.js / hls.js / native),
 // handles touch gestures (brightness, volume, seek, channel switch) and keyboard.
 (function () {
   "use strict";
   let mp = null, hls = null, video = null, box = null, opts = {}, cbs = {};
-  let hideTimer = null, info = null, infoTimer = null, bright = 1;
+  let hideTimer = null, info = null, infoTimer = null, bright = 1, fitMode = "contain", zoom = 1;
 
   function hasMse() { return !!(window.MediaSource || window.ManagedMediaSource); }
   function nativeHls(v) { return !!v.canPlayType("application/vnd.apple.mpegurl"); }
@@ -59,6 +59,7 @@
     o.tsUrl = abs(o.tsUrl); o.hlsUrl = abs(o.hlsUrl); o.fileUrl = abs(o.fileUrl);
     box = container; video = v; opts = o || {};
     video.style.filter = bright !== 1 ? "brightness(" + bright + ")" : "";
+    applyFit();
     if (o.live) {
       const mode = o.mode || "auto";
       if (mode === "hls") playHls(o.hlsUrl);
@@ -79,6 +80,27 @@
     }
     showUi();
   }
+
+  // ---------------------------------------------------------- picture format
+  // contain = fit, cover = fill/crop, fill = stretch, none = original size, 16:9 / 4:3 = forced ratio
+  function applyFit() {
+    if (!video || !box) return;
+    const st = video.style;
+    st.width = st.height = st.left = st.top = "";
+    st.transform = zoom === 1 ? "" : "scale(" + zoom + ")";
+    const ratio = fitMode === "16:9" ? 16 / 9 : fitMode === "4:3" ? 4 / 3 : 0;
+    if (ratio) {
+      const W = box.clientWidth, H = box.clientHeight;
+      let w = W, h = W / ratio;
+      if (h > H) { h = H; w = H * ratio; }
+      st.objectFit = "fill";
+      st.width = w + "px"; st.height = h + "px";
+      st.left = (W - w) / 2 + "px"; st.top = (H - h) / 2 + "px";
+    } else {
+      st.objectFit = fitMode;
+    }
+  }
+  window.addEventListener("resize", applyFit);
 
   // ---------------------------------------------------------- overlay
   function showUi() {
@@ -108,6 +130,11 @@
   let g = null;
   function gestures(layer) {
     layer.addEventListener("touchstart", function (e) {
+      if (e.touches.length === 2 && opts.gestures && opts.gestures.pinch) {
+        const a = e.touches[0], b = e.touches[1];
+        g = { pinch: true, d0: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z0: zoom };
+        return;
+      }
       if (e.touches.length !== 1) { g = null; return; }
       const t = e.touches[0], r = layer.getBoundingClientRect();
       g = { x: t.clientX, y: t.clientY, w: r.width, h: r.height, left: t.clientX - r.left < r.width / 2,
@@ -115,6 +142,15 @@
     }, { passive: true });
     layer.addEventListener("touchmove", function (e) {
       if (!g || !video) return;
+      if (g.pinch) {
+        if (e.touches.length < 2) return;
+        e.preventDefault();
+        const a = e.touches[0], b = e.touches[1];
+        zoom = Math.min(4, Math.max(0.5, g.z0 * Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / g.d0));
+        video.style.transform = zoom === 1 ? "" : "scale(" + zoom + ")";
+        bubble("🔍 " + Math.round(zoom * 100) + "%", true);
+        return;
+      }
       const t = e.touches[0], dx = t.clientX - g.x, dy = t.clientY - g.y, ge = opts.gestures || {};
       if (!g.mode) {
         if (Math.abs(dy) > 20 && Math.abs(dy) > Math.abs(dx)) g.mode = g.left ? (ge.bright ? "bright" : "none") : (ge.volume ? "volume" : "none");
@@ -140,6 +176,11 @@
     }, { passive: false });
     layer.addEventListener("touchend", function (e) {
       if (!g) return;
+      if (g.pinch) {
+        if (e.touches.length === 0) { g = null; infoTimer = setTimeout(function () { if (info) info.style.display = "none"; }, 600); }
+        e.preventDefault();
+        return;
+      }
       const t = e.changedTouches[0], dx = t.clientX - g.x;
       if (!g.mode) toggleUi();
       else if (g.mode === "seek") { try { video.currentTime = g.seek; } catch (x) {} }
@@ -192,7 +233,7 @@
     },
     time: function () { return video ? video.currentTime || 0 : 0; },
     duration: function () { return video && isFinite(video.duration) ? video.duration : 0; },
-    setFit: function (m) { if (video) video.style.objectFit = m; },
+    setFit: function (m) { fitMode = m; zoom = 1; applyFit(); },
     pip: function () {
       if (!video) return;
       if (document.pictureInPictureElement) document.exitPictureInPicture();

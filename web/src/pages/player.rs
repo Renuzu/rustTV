@@ -39,7 +39,18 @@ extern "C" {
     fn js_keep_ui(on: bool);
 }
 
-const FITS: [&str; 3] = ["contain", "cover", "fill"];
+const FITS: [&str; 6] = ["contain", "cover", "fill", "none", "16:9", "4:3"];
+
+fn fit_labels() -> [&'static str; 6] {
+    [
+        t("Anpassen (ganzes Bild)", "Fit (whole picture)"),
+        t("Füllen (Ränder abschneiden)", "Fill (crop edges)"),
+        t("Strecken (ganzer Bildschirm)", "Stretch (full screen)"),
+        t("Original-Größe", "Original size"),
+        "16:9",
+        "4:3",
+    ]
+}
 
 #[derive(Clone, PartialEq)]
 struct PState {
@@ -120,7 +131,7 @@ pub fn player_page() -> Html {
     let panel = use_state(|| false);
     let pquery = use_state(String::new);
     let sleep = use_mut_ref(|| None::<gloo_timers::callback::Timeout>);
-    let fit = use_state(|| store::settings().fit.min(2));
+    let fit = use_state(|| store::settings().fit.min(5));
     let s = store::settings();
     let live = single.is_none() && kind == Kind::Live;
     let current: Option<Entry> = if single.is_none() {
@@ -175,7 +186,7 @@ pub fn player_page() -> Html {
             let s = store::settings();
             let entry = list.get(index).cloned();
             let gest = serde_json::json!({ "bright": s.gestures && s.g_bright, "volume": s.gestures && s.g_volume,
-                                           "seek": s.gestures && s.g_seek, "zap": s.gestures && s.g_zap });
+                                           "seek": s.gestures && s.g_seek, "zap": s.gestures && s.g_zap, "pinch": s.g_pinch });
             let opts = match (&single, &entry, &acc) {
                 (Some((url, _)), _, _) => {
                     serde_json::json!({ "live": false, "tsFile": true, "fileUrl": api::proxied(url), "gestures": gest })
@@ -311,16 +322,26 @@ pub fn player_page() -> Html {
     let cycle_fit = {
         let (fit, ui) = (fit.clone(), ui.clone());
         Callback::from(move |_: MouseEvent| {
-            let n = (*fit + 1) % 3;
-            fit.set(n);
-            let mut s = store::settings();
-            s.fit = n;
-            store::save_settings(&s);
-            ui.toast(match n {
-                0 => t("Einpassen", "Fit"),
-                1 => t("Zoom (ausfüllen)", "Zoom (fill)"),
-                _ => t("Strecken", "Stretch"),
-            });
+            let items = fit_labels()
+                .iter()
+                .enumerate()
+                .map(|(i, l)| {
+                    let (fit, ui2, l) = (fit.clone(), ui.clone(), *l);
+                    let mark = if i as u8 == *fit { "✓ " } else { "" };
+                    (
+                        format!("{mark}{l}"),
+                        Callback::from(move |_| {
+                            fit.set(i as u8);
+                            js_fit(FITS[i]); // also resets the two-finger zoom
+                            let mut s = store::settings();
+                            s.fit = i as u8;
+                            store::save_settings(&s);
+                            ui2.toast(l);
+                        }),
+                    )
+                })
+                .collect();
+            ui.menu(t("Bildformat", "Picture format"), items);
         })
     };
     let sleep_menu = {

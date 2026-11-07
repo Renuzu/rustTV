@@ -94,13 +94,14 @@ class Store(ctx: Context) {
     val gBright get() = gestures && p.getBoolean("g_bright", true)
     val gSeek get() = gestures && p.getBoolean("g_seek", true)
     val posterGrid get() = p.getBoolean("poster_grid", true)
+    val pinchZoom get() = p.getBoolean("pinch_zoom", true)
     val resume get() = p.getBoolean("resume", true)
     val autoNext get() = p.getBoolean("auto_next", true)
     val autoPip get() = p.getBoolean("auto_pip", false)
     val startLast get() = p.getBoolean("start_last", false)
     val showLogos get() = p.getBoolean("show_logos", true)
     val autoLockAdult get() = p.getBoolean("auto_lock_adult", true)
-    val userAgent get() = (p.getString("user_agent", "") ?: "").ifBlank { "RusTV-Android" }
+    val userAgent get() = (p.getString("user_agent", "") ?: "").ifBlank { "ruSTv-Android" }
     var resizeMode: Int
         get() = p.getInt("resize", 0)
         set(v) = p.edit().putInt("resize", v).apply()

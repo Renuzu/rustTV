@@ -176,6 +176,8 @@ pub fn settings_page() -> Html {
             { toggle(t("Spulen", "Seek"), t("Bei Filmen seitlich wischen", "Swipe sideways in movies"), |x| x.g_seek, |x, v| x.g_seek = v, !g) }
             { toggle(t("Sender wechseln", "Switch channel"), t("Bei Live-TV seitlich wischen", "Swipe sideways in live TV"), |x| x.g_zap, |x, v| x.g_zap = v, !g) }
 
+            { toggle(t("Zoom mit zwei Fingern", "Two-finger zoom"), t("Bild vergrößern/verkleinern; Bildformat setzt zurück", "Enlarge/shrink the picture; picture format resets it"), |x| x.g_pinch, |x, v| x.g_pinch = v, false) }
+
             <h2>{ t("Liste", "List") }</h2>
             { toggle(t("Filme & Serien als Bilder-Raster", "Movies & series as poster grid"), "", |x| x.poster_grid, |x, v| x.poster_grid = v, false) }
             { toggle(t("Logos/Cover anzeigen", "Show logos/covers"), "", |x| x.show_logos, |x, v| x.show_logos = v, false) }
@@ -197,7 +199,7 @@ pub fn settings_page() -> Html {
             <button class="opt-btn" onclick={reload_lists}>{ t("↻ Senderlisten neu laden", "↻ Reload channel lists") }</button>
 
             <p class="muted small about">
-                { format!("RusTV {} · {} · ", info.version, if info.mode == "desktop" { "Desktop" } else { "Server" }) }
+                { format!("ruSTv {} · {} · ", info.version, if info.mode == "desktop" { "Desktop" } else { "Server" }) }
                 <a href={format!("https://github.com/{REPO}")} target="_blank">{"GitHub"}</a>
             </p>
         </div>

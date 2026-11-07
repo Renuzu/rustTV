@@ -163,7 +163,7 @@ pub fn home_page() -> Html {
     let acc = store::account();
     html! {
         <div class="page">
-            <TopBar title="RusTV" sub={acc.map(|a| AttrValue::from(a.name))}>
+            <TopBar title="ruSTv" sub={acc.map(|a| AttrValue::from(a.name))}>
                 <Link<Route> to={Route::Bouquets { kind: "live".into() }} classes="icon" ><span title={t("Bouquets", "Bouquets")}>{"📚"}</span></Link<Route>>
                 <Link<Route> to={Route::Accounts} classes="icon"><span title={t("Konten", "Accounts")}>{"👤"}</span></Link<Route>>
                 <Link<Route> to={Route::Settings} classes="icon"><span title={t("Einstellungen", "Settings")}>{"⚙️"}</span></Link<Route>>

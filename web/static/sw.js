@@ -1,4 +1,4 @@
-// RusTV service worker: makes the app installable and keeps the app shell offline.
+// ruSTv service worker: makes the app installable and keeps the app shell offline.
 // Hashed build files are cached forever; everything else is network-first so updates arrive immediately.
 const CACHE = "rustv-shell-v1";
 const HASHED = /-[0-9a-f]{16}\.(js|wasm|css)$/;

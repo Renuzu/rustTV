@@ -1,5 +1,5 @@
 //! Everything saved on this device (browser localStorage).
-//! Nothing is sent anywhere except to the user's own RusTV server.
+//! Nothing is sent anywhere except to the user's own ruSTv server.
 
 use crate::api::Kind;
 use gloo_storage::{LocalStorage, Storage};
@@ -67,6 +67,7 @@ pub struct Settings {
     pub g_volume: bool,
     pub g_seek: bool,
     pub g_zap: bool,
+    pub g_pinch: bool,
     pub auto_lock_adult: bool,
     pub pin: String,
     pub fit: u8,
@@ -88,6 +89,7 @@ impl Default for Settings {
             g_volume: true,
             g_seek: true,
             g_zap: true,
+            g_pinch: true,
             auto_lock_adult: true,
             pin: String::new(),
             fit: 0,
@@ -249,7 +251,7 @@ pub fn set_position(id: &str, secs: f64) {
 
 // ------------------------------------------------------------ backup
 
-/// All RusTV data as JSON (for moving to another device).
+/// All ruSTv data as JSON (for moving to another device).
 pub fn export_all() -> String {
     let mut map = serde_json::Map::new();
     if let Some(st) = web_sys::window().and_then(|w| w.local_storage().ok().flatten()) {

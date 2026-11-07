@@ -1,4 +1,4 @@
-//! Talks to the Xtream Codes API through the RusTV server (`/api/xtream`).
+//! Talks to the Xtream Codes API through the ruSTv server (`/api/xtream`).
 
 use crate::store::{t, Account};
 use base64::Engine;
@@ -402,7 +402,7 @@ pub fn timeshift_url(acc: &Account, stream_id: &str, p: &Programme) -> String {
     )
 }
 
-/// Route a provider URL through the RusTV server.
+/// Route a provider URL through the ruSTv server.
 pub fn proxied(url: &str) -> String {
     format!("/api/p?u={}", enc(url))
 }

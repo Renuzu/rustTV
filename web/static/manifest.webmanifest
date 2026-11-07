@@ -1,6 +1,6 @@
 {
-  "name": "RusTV",
-  "short_name": "RusTV",
+  "name": "ruSTv",
+  "short_name": "ruSTv",
   "description": "Self-hosted IPTV player for Xtream Codes",
   "start_url": "/",
   "scope": "/",

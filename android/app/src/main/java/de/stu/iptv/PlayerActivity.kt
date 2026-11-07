@@ -56,12 +56,10 @@ class PlayerActivity : AppCompatActivity() {
 
     companion object {
         private var current: PlayerActivity? = null
-        private val RESIZE_MODES = intArrayOf(
-            AspectRatioFrameLayout.RESIZE_MODE_FIT,
-            AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
-            AspectRatioFrameLayout.RESIZE_MODE_FILL
+        private val RESIZE_LABELS = arrayOf(
+            "Anpassen (ganzes Bild)", "Füllen (Ränder abschneiden)", "Strecken (ganzer Bildschirm)",
+            "Original-Größe", "16:9", "4:3"
         )
-        private val RESIZE_LABELS = arrayOf("Einpassen", "Zoom (ausfüllen)", "Strecken")
     }
 
     private lateinit var store: Store
@@ -132,7 +130,7 @@ class PlayerActivity : AppCompatActivity() {
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
 
-        view.resizeMode = RESIZE_MODES[store.resizeMode.coerceIn(0, RESIZE_MODES.size - 1)]
+        applyResize()
         view.setShowSubtitleButton(true)
         view.setShowNextButton(false)
         view.setShowPreviousButton(false)
@@ -178,7 +176,7 @@ class PlayerActivity : AppCompatActivity() {
             add("Weiter ▶") { switchBy(1) }
             if (kind == Kind.LIVE) add("↺ Letzter Sender") { recall() }
         }
-        add("⤢ Bildformat") { cycleResize() }
+        add("⤢ Bildformat", keepOpen = false) { resizeDialog() }
         add("⏾ Sleep-Timer") { sleepDialog() }
         add("⧉ Bild-in-Bild", keepOpen = false) { enterPip() }
         add("🔒 Sperren", keepOpen = false) { lock() }
@@ -245,6 +243,10 @@ class PlayerActivity : AppCompatActivity() {
             }
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_ENDED) onEnded()
+            }
+            override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
+                // PlayerView setzt das Seitenverhältnis selbst – danach unser Format wieder anwenden
+                view.post { applyResize() }
             }
         })
         return p
@@ -352,12 +354,60 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     // ---------------- Bildformat, Tempo, Timer, Sperre, PiP ----------------
-    private fun cycleResize() {
-        val next = (store.resizeMode + 1) % RESIZE_MODES.size
-        store.resizeMode = next
-        view.resizeMode = RESIZE_MODES[next]
-        showInfo("⤢ ${RESIZE_LABELS[next]}")
+    private var zoom = 1f
+    private val contentFrame get() = view.findViewById<AspectRatioFrameLayout>(androidx.media3.ui.R.id.exo_content_frame)
+
+    private fun resizeDialog() {
+        val labels = RESIZE_LABELS + (if (zoom != 1f) arrayOf("Zoom zurücksetzen (${(zoom * 100).toInt()}%)") else emptyArray())
+        MaterialAlertDialogBuilder(this).setTitle("Bildformat")
+            .setSingleChoiceItems(labels, store.resizeMode.coerceIn(0, RESIZE_LABELS.size - 1)) { d, w ->
+                if (w < RESIZE_LABELS.size) store.resizeMode = w
+                zoom = 1f
+                applyResize()
+                showInfo("⤢ ${if (w < RESIZE_LABELS.size) RESIZE_LABELS[w] else "100%"}")
+                d.dismiss()
+            }.show()
     }
+
+    /** Bildformat anwenden: Anpassen, Füllen, Strecken, Original, 16:9, 4:3 (+ Zwei-Finger-Zoom). */
+    private fun applyResize() {
+        val frame = contentFrame ?: return
+        val mode = store.resizeMode.coerceIn(0, RESIZE_LABELS.size - 1)
+        val lp = android.widget.FrameLayout.LayoutParams(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.Gravity.CENTER)
+        view.resizeMode = when (mode) {
+            1 -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+            2 -> AspectRatioFrameLayout.RESIZE_MODE_FILL
+            else -> AspectRatioFrameLayout.RESIZE_MODE_FIT
+        }
+        if (mode == 3) {
+            val vs = player?.videoSize
+            if (vs != null && vs.width > 0 && vs.height > 0) {
+                lp.width = (vs.width * vs.pixelWidthHeightRatio).toInt()
+                lp.height = vs.height
+            }
+        }
+        frame.layoutParams = lp
+        when (mode) {
+            4 -> frame.setAspectRatio(16f / 9f)
+            5 -> frame.setAspectRatio(4f / 3f)
+        }
+        frame.scaleX = zoom
+        frame.scaleY = zoom
+    }
+
+    private val scaleDetector by lazy {
+        android.view.ScaleGestureDetector(this, object : android.view.ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(d: android.view.ScaleGestureDetector): Boolean {
+                zoom = (zoom * d.scaleFactor).coerceIn(0.5f, 4f)
+                contentFrame?.let { it.scaleX = zoom; it.scaleY = zoom }
+                showInfo("🔍 ${(zoom * 100).toInt()}%", hide = false)
+                return true
+            }
+            override fun onScaleEnd(d: android.view.ScaleGestureDetector) { hideInfoSoon() }
+        })
+    }
+    private var pinching = false
 
     private fun speedDialog() {
         val speeds = floatArrayOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
@@ -435,7 +485,21 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         if (locked) { if (ev.actionMasked == MotionEvent.ACTION_DOWN) flashUnlock(); return super.dispatchTouchEvent(ev) }
-        if (inPip || !store.gestures) return super.dispatchTouchEvent(ev)
+        if (inPip) return super.dispatchTouchEvent(ev)
+        // Zwei-Finger-Zoom
+        if (store.pinchZoom) {
+            scaleDetector.onTouchEvent(ev)
+            if (ev.actionMasked == MotionEvent.ACTION_POINTER_DOWN && !pinching) {
+                pinching = true
+                g = G.NONE
+                cancelForChildren(ev)
+            }
+            if (pinching) {
+                if (ev.actionMasked == MotionEvent.ACTION_UP || ev.actionMasked == MotionEvent.ACTION_CANCEL) pinching = false
+                return true
+            }
+        }
+        if (!store.gestures) return super.dispatchTouchEvent(ev)
         val w = window.decorView.width.toFloat()
         val h = window.decorView.height.toFloat()
         when (ev.actionMasked) {
