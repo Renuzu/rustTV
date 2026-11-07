@@ -7,6 +7,7 @@
     <name>rustTV</name>
     <access origin="*" subdomains="true" />
     <tizen:allow-navigation>*</tizen:allow-navigation>
+    <tizen:content-security-policy>default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'</tizen:content-security-policy>
     <tizen:privilege name="http://tizen.org/privilege/internet" />
     <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice" />
     <tizen:profile name="tv-samsung" />

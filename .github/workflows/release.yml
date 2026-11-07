@@ -159,7 +159,7 @@ jobs:
       - name: Package Samsung TV app (Tizen .wgt)
         run: |
           sed -i 's/version="1.0.0"/version="${{ steps.v.outputs.version }}"/' tizen/config.xml
-          (cd tizen && zip -r -X ../bin/rustTV-samsung-tv.wgt config.xml index.html icon.png)
+          (cd tizen && zip -r -X ../bin/rustTV-samsung-tv.wgt config.xml index.html style.css app.js icon.png)
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.v.outputs.version }}
