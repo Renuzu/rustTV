@@ -10,12 +10,12 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/mobile-home.png" width="200" alt="Home screen" />
-  <img src="docs/screenshots/mobile-list.png" width="200" alt="Channel list" />
-  <img src="docs/screenshots/mobile-bouquets.png" width="200" alt="Bouquet manager" />
+  <img src="docs/screenshots/mobile-home-2.png" width="200" alt="Home screen" />
+  <img src="docs/screenshots/mobile-list-2.png" width="200" alt="Channel list" />
+  <img src="docs/screenshots/mobile-bouquets-2.png" width="200" alt="Bouquet manager" />
 </p>
 <p align="center">
-  <img src="docs/screenshots/desktop-player.png" width="620" alt="Player with channel list" />
+  <img src="docs/screenshots/desktop-player-2.png" width="620" alt="Player with channel list" />
 </p>
 
 > **rustTV is only a player.** It does not provide, host or link to any channels, movies or series.
