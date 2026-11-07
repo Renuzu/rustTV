@@ -1,6 +1,6 @@
 {
-  "versionCode": 12,
-  "versionName": "3.9",
+  "versionCode": 13,
+  "versionName": "3.10",
   "apk": "https://github.com/Renuzu/rustTV/raw/main/android/dist/rustv-android.apk",
-  "notes": "Update-Hinweis jetzt bei jedem \u00d6ffnen und als Benachrichtigung im Hintergrund."
+  "notes": "Updates werden jetzt \u00fcber den Download-Dienst von Android geladen (nicht mehr \u00fcber den Browser)."
 }

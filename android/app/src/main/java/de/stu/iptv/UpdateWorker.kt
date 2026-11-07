@@ -46,14 +46,15 @@ class UpdateWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx
             val nm = ctx.getSystemService(NotificationManager::class.java)
             nm.createNotificationChannel(NotificationChannel(CHANNEL, "Updates", NotificationManager.IMPORTANCE_DEFAULT))
         }
+        // Tap opens rustTV, which shows the update dialog and downloads via Android's download service
         val open = PendingIntent.getActivity(ctx, 0,
-            Intent(Intent.ACTION_VIEW, Uri.parse(info.optString("apk"))),
+            Intent(ctx, LoginActivity::class.java).putExtra("check_update", true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val n = NotificationCompat.Builder(ctx, CHANNEL)
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
             .setContentTitle("rustTV ${info.optString("versionName")} ist verfügbar")
             .setContentText(info.optString("notes").ifBlank { "Antippen zum Herunterladen" })
-            .setStyle(NotificationCompat.BigTextStyle().bigText(info.optString("notes") + "\nAntippen zum Herunterladen."))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(info.optString("notes") + "\nAntippen zum Aktualisieren."))
             .setContentIntent(open)
             .setAutoCancel(true)
             .build()

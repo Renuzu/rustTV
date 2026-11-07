@@ -96,6 +96,7 @@ class HomeActivity : AppCompatActivity() {
         }
         loadAll()
         UpdateWorker.schedule(this)
+        if (intent.getBooleanExtra("check_update", false)) Updater.check(this, manual = true)
         askNotificationPermission()
         // WireGuard nur für rustTV: beim Start verbinden, wenn eingeschaltet
         if (Wg.enabled(this) && !Wg.isUp(this)) wg.start()

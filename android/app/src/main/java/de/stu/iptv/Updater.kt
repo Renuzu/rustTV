@@ -65,20 +65,33 @@ object Updater {
             MaterialAlertDialogBuilder(a)
                 .setTitle("Update ${info.optString("versionName")} verfügbar")
                 .setMessage(info.optString("notes").ifBlank { "Eine neue Version von rustTV ist verfügbar." })
-                .setPositiveButton("Jetzt installieren") { _, _ -> download(a, info.optString("apk")) }
+                .setPositiveButton("Jetzt installieren") { _, _ -> download(a, info.optString("apk"), info.optString("versionName")) }
                 .setNeutralButton("Diese überspringen") { _, _ -> p.edit().putLong("skipped", code).apply() }
                 .setNegativeButton("Später", null)
                 .show()
         }
     }
 
-    /** Opens the APK link in the browser – Android downloads it and offers to install. */
-    private fun download(a: AppCompatActivity, url: String) {
+    /**
+     * Downloads the APK with Android's own download service (not the browser).
+     * When finished, a notification appears – tapping it opens the installer.
+     */
+    fun download(a: AppCompatActivity, url: String, version: String = "") {
         try {
-            a.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-            Toast.makeText(a, "Download startet – danach die Datei antippen und „Aktualisieren“ wählen.", Toast.LENGTH_LONG).show()
+            val name = "rustTV-${version.ifBlank { "update" }}.apk"
+            val req = android.app.DownloadManager.Request(Uri.parse(url))
+                .setTitle("rustTV ${version} – Update")
+                .setDescription("Fertig? Antippen zum Installieren")
+                .setMimeType("application/vnd.android.package-archive")
+                .setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                .setDestinationInExternalPublicDir(android.os.Environment.DIRECTORY_DOWNLOADS, name)
+            (a.getSystemService(Context.DOWNLOAD_SERVICE) as android.app.DownloadManager).enqueue(req)
+            Toast.makeText(a, "Update wird geladen – danach die Benachrichtigung „Download abgeschlossen“ antippen und „Aktualisieren“ wählen.", Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
-            Toast.makeText(a, "Kein Browser gefunden", Toast.LENGTH_LONG).show()
+            // Fallback: Browser
+            try { a.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } catch (_: Exception) {
+                Toast.makeText(a, "Download nicht möglich: ${e.message}", Toast.LENGTH_LONG).show()
+            }
         }
     }
 }

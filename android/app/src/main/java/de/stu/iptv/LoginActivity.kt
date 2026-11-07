@@ -62,6 +62,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun openMain() {
         startActivity(Intent(this, HomeActivity::class.java)
+            .putExtra("check_update", intent.getBooleanExtra("check_update", false))
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK))
         finish()
     }
