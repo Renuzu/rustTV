@@ -142,6 +142,99 @@ pub fn settings_page() -> Html {
         let _ = web_sys::window().unwrap().location().reload();
     });
 
+    let check_update = {
+        let (ui, info) = (ui.clone(), info.clone());
+        Callback::from(move |_: MouseEvent| {
+            let (ui, info) = (ui.clone(), info.clone());
+            ui.toast(t("Suche nach Updates …", "Checking for updates …"));
+            wasm_bindgen_futures::spawn_local(async move {
+                let url = format!("https://api.github.com/repos/{REPO}/releases/latest");
+                let v = match gloo_net::http::Request::get(&url).send().await {
+                    Ok(r) => r.json::<serde_json::Value>().await.ok(),
+                    Err(_) => None,
+                };
+                let Some(v) = v else {
+                    ui.message(
+                        t("Update", "Update"),
+                        t(
+                            "Update-Prüfung fehlgeschlagen. Bitte später erneut versuchen.",
+                            "Update check failed. Please try again later.",
+                        ),
+                    );
+                    return;
+                };
+                let tag = v["tag_name"]
+                    .as_str()
+                    .unwrap_or("")
+                    .trim_start_matches('v')
+                    .to_string();
+                if tag.is_empty() || !super::home::newer(&tag, &info.version) {
+                    ui.message(
+                        t("Update", "Update"),
+                        &format!(
+                            "{} ({})",
+                            t(
+                                "Du hast die neueste Version.",
+                                "You have the latest version."
+                            ),
+                            info.version
+                        ),
+                    );
+                    return;
+                }
+                let page = v["html_url"].as_str().unwrap_or("").to_string();
+                let installer = v["assets"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|a| a["browser_download_url"].as_str())
+                    .find(|u| {
+                        if super::home::is_mac() {
+                            u.ends_with(".dmg")
+                        } else {
+                            u.ends_with("-setup.exe")
+                        }
+                    })
+                    .map(String::from);
+                let desktop = info.mode == "desktop";
+                let target = if desktop {
+                    installer.unwrap_or(page)
+                } else {
+                    page
+                };
+                let ui2 = ui.clone();
+                ui.menu(
+                    &format!(
+                        "{} {tag} {}",
+                        t("Version", "Version"),
+                        t("ist verfügbar", "is available")
+                    ),
+                    vec![(
+                        if info.mode == "desktop" {
+                            t(
+                                "⬇ Jetzt herunterladen & installieren",
+                                "⬇ Download & install now",
+                            )
+                        } else {
+                            t("Zur Anleitung", "Open release page")
+                        }
+                        .to_string(),
+                        Callback::from(move |_| {
+                            let _ = ui2.clone();
+                            if let Some(w) = web_sys::window() {
+                                // desktop: the app opens it in the normal browser; server: new tab
+                                if desktop {
+                                    let _ = w.location().set_href(&target);
+                                } else {
+                                    let _ = w.open_with_url_and_target(&target, "_blank");
+                                }
+                            }
+                        }),
+                    )],
+                );
+            });
+        })
+    };
     let g = s.gestures;
     html! {
         <div class="page narrow">
@@ -199,6 +292,8 @@ pub fn settings_page() -> Html {
             <button class="opt-btn" onclick={export}>{ t("⬇ Export (Sicherung)", "⬇ Export (backup)") }</button>
             <label class="opt-btn file">{ t("⬆ Import", "⬆ Import") }<input type="file" accept="application/json" onchange={import} /></label>
             <button class="opt-btn" onclick={reload_lists}>{ t("↻ Senderlisten neu laden", "↻ Reload channel lists") }</button>
+
+            <button class="opt-btn" onclick={check_update}>{ t("🔄 Nach Updates suchen", "🔄 Check for updates") }</button>
 
             <p class="muted small about">
                 { format!("rustTV {} · {} · ", info.version, if info.mode == "desktop" { "Desktop" } else { "Server" }) }

@@ -265,7 +265,7 @@ pub fn newer(a: &str, b: &str) -> bool {
     p(a) > p(b)
 }
 
-fn is_mac() -> bool {
+pub fn is_mac() -> bool {
     web_sys::window()
         .and_then(|w| w.navigator().user_agent().ok())
         .map(|ua| ua.contains("Macintosh"))
