@@ -37,6 +37,7 @@
 - **Bouquet manager**: reorder categories, move a whole country to the top (e.g. all `|TR|` categories), show/hide categories or entire countries
 - **Parental control**: PIN, locked categories, adult categories locked automatically
 - **Vault**: a PIN-protected area – content you move there disappears from all normal lists and search
+- **VPN / proxy for rustTV only**: route just this app through your VPN provider's SOCKS5 or HTTP proxy (no fallback to the normal connection)
 - **Private by design**: logins, favorites and settings stay on your device (export/import to move them)
 - **Update notice** when a new version is released
 - German and English interface
@@ -124,7 +125,18 @@ play, try *Settings → Live TV format → HLS* or copy the stream link (⋮ →
 |---------------------|-----------------|------------------------------------------------------------------|
 | `RUSTV_BIND`        | `0.0.0.0:8080`  | Address and port to listen on                                    |
 | `RUSTV_PASSWORD`    | *(empty)*       | Password for the web interface – **set this** if others can reach the server |
+| `RUSTV_UPSTREAM_PROXY` | *(empty)* | Send all provider traffic through a proxy, e.g. `socks5h://user:pass@proxy.example:1080` or `http://user:pass@host:3128` |
 | `RUSTV_USER_AGENT`  | `rustTV/<ver>`   | User-Agent sent to the provider (some require e.g. `VLC/3.0.20`) |
+
+## VPN / proxy
+
+Many VPN providers also offer a **SOCKS5** (or HTTP) proxy login. rustTV can send only its own traffic through it –
+the rest of your device keeps using the normal connection. If the proxy does not work, rustTV does **not** fall back
+to the direct connection.
+
+- **Windows / Mac app** and **Android**: *Settings → VPN / proxy*, enter server, port, username and password, then *Save & test*.
+  The test shows the IP address your IPTV provider sees.
+- **Server (Docker / Proxmox)**: set `RUSTV_UPSTREAM_PROXY` (see the table above). It applies to all users of that server.
 
 ## Security notes
 

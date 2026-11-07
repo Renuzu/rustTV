@@ -24,5 +24,5 @@ features = [
   "Window", "Document", "Element", "HtmlElement", "HtmlVideoElement", "HtmlMediaElement",
   "HtmlInputElement", "HtmlSelectElement", "HtmlAnchorElement", "Navigator", "Clipboard",
   "Location", "Blob", "BlobPropertyBag", "Url", "File", "FileList", "Event", "KeyboardEvent",
-  "MouseEvent", "Storage", "DomTokenList",
+  "MouseEvent", "Storage", "DomTokenList", "console",
 ]

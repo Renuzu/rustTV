@@ -82,6 +82,13 @@ fn app() -> Html {
                     Ok(r) => r.json::<ServerInfo>().await.unwrap_or_default(),
                     Err(_) => ServerInfo::default(),
                 };
+                // desktop app: switch the built-in server to this device's VPN/proxy before anything loads
+                let s = store::settings();
+                if i.mode == "desktop" && !s.proxy_kind.is_empty() {
+                    if let Err(e) = api::apply_proxy(&s).await {
+                        gloo_console_log(&format!("proxy: {e}"));
+                    }
+                }
                 info.set(Some(i));
             });
         });
@@ -120,6 +127,10 @@ fn app() -> Html {
             </ContextProvider<ServerInfo>>
         </ContextProvider<Ui>>
     }
+}
+
+fn gloo_console_log(s: &str) {
+    web_sys::console::log_1(&s.into());
 }
 
 fn main() {

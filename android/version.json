@@ -1,6 +1,6 @@
 {
-  "versionCode": 9,
-  "versionName": "3.6",
+  "versionCode": 10,
+  "versionName": "3.7",
   "apk": "https://github.com/Renuzu/rustTV/raw/main/android/dist/rustv-android.apk",
-  "notes": "Neuer Name: rustTV."
+  "notes": "Neu: VPN/Proxy nur f\u00fcr rustTV (Einstellungen \u2192 VPN / Proxy)."
 }

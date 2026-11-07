@@ -18,4 +18,14 @@
         <item>normal</item>
         <item>large</item>
     </string-array>
+    <string-array name="proxy_labels">
+        <item>Aus</item>
+        <item>SOCKS5</item>
+        <item>HTTP</item>
+    </string-array>
+    <string-array name="proxy_values">
+        <item></item>
+        <item>socks5</item>
+        <item>http</item>
+    </string-array>
 </resources>

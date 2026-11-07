@@ -33,7 +33,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -220,11 +220,8 @@ class PlayerActivity : AppCompatActivity() {
 
     // ---------------- Wiedergabe ----------------
     private fun buildPlayer(): ExoPlayer {
-        val http = DefaultHttpDataSource.Factory()
+        val http = OkHttpDataSource.Factory(Net.client(this))
             .setUserAgent(store.userAgent)
-            .setAllowCrossProtocolRedirects(true)
-            .setConnectTimeoutMs(15000)
-            .setReadTimeoutMs(30000)
         val load = when (store.buffer) {
             "small" -> DefaultLoadControl.Builder().setBufferDurationsMs(5000, 15000, 500, 1000).build()
             "large" -> DefaultLoadControl.Builder().setBufferDurationsMs(30000, 120000, 2500, 5000).build()

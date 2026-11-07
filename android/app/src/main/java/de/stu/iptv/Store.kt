@@ -7,7 +7,7 @@ import org.json.JSONObject
 data class Account(val id: String, val name: String, val server: String, val user: String, val pass: String)
 
 /** Alle gespeicherten Daten. Favoriten, Reihenfolge usw. gelten je Konto. */
-class Store(ctx: Context) {
+class Store(val ctx: Context) {
     companion object { const val FILE = "iptv" }
 
     private val p = ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE)
@@ -95,6 +95,12 @@ class Store(ctx: Context) {
     val gSeek get() = gestures && p.getBoolean("g_seek", true)
     val posterGrid get() = p.getBoolean("poster_grid", true)
     val pinchZoom get() = p.getBoolean("pinch_zoom", true)
+    // VPN / Proxy (nur für diese App)
+    val proxyKind get() = p.getString("proxy_kind", "") ?: ""
+    val proxyHost get() = p.getString("proxy_host", "") ?: ""
+    val proxyPort get() = (p.getString("proxy_port", "1080") ?: "1080").trim().toIntOrNull() ?: 1080
+    val proxyUser get() = p.getString("proxy_user", "") ?: ""
+    val proxyPass get() = p.getString("proxy_pass", "") ?: ""
     val resume get() = p.getBoolean("resume", true)
     val autoNext get() = p.getBoolean("auto_next", true)
     val autoPip get() = p.getBoolean("auto_pip", false)

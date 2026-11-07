@@ -18,7 +18,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.AspectRatioFrameLayout
@@ -143,7 +143,7 @@ class MultiViewActivity : AppCompatActivity() {
     private fun startSlot(s: Slot) {
         val e = s.entry ?: return
         s.player?.release()
-        val http = DefaultHttpDataSource.Factory().setUserAgent(store.userAgent).setAllowCrossProtocolRedirects(true)
+        val http = OkHttpDataSource.Factory(Net.client(this)).setUserAgent(store.userAgent)
         val p = ExoPlayer.Builder(this).setMediaSourceFactory(DefaultMediaSourceFactory(this).setDataSourceFactory(http)).build()
         p.addListener(object : Player.Listener {
             override fun onPlayerError(error: PlaybackException) {

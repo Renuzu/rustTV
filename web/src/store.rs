@@ -71,6 +71,12 @@ pub struct Settings {
     pub auto_lock_adult: bool,
     pub pin: String,
     pub fit: u8,
+    /// "" (off), "socks5" or "http"
+    pub proxy_kind: String,
+    pub proxy_host: String,
+    pub proxy_port: u16,
+    pub proxy_user: String,
+    pub proxy_pass: String,
 }
 
 impl Default for Settings {
@@ -93,6 +99,11 @@ impl Default for Settings {
             auto_lock_adult: true,
             pin: String::new(),
             fit: 0,
+            proxy_kind: String::new(),
+            proxy_host: String::new(),
+            proxy_port: 1080,
+            proxy_user: String::new(),
+            proxy_pass: String::new(),
         }
     }
 }

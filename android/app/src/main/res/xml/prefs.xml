@@ -42,6 +42,17 @@
             app:defaultValue="true" app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="VPN / Proxy (nur für rustTV)" app:iconSpaceReserved="false">
+        <ListPreference app:key="proxy_kind" app:title="Art" app:defaultValue=""
+            app:entries="@array/proxy_labels" app:entryValues="@array/proxy_values" app:useSimpleSummaryProvider="true" app:iconSpaceReserved="false" />
+        <EditTextPreference app:key="proxy_host" app:title="Server" app:useSimpleSummaryProvider="true" app:iconSpaceReserved="false" />
+        <EditTextPreference app:key="proxy_port" app:title="Port" app:defaultValue="1080" app:useSimpleSummaryProvider="true" app:iconSpaceReserved="false" />
+        <EditTextPreference app:key="proxy_user" app:title="Benutzer" app:useSimpleSummaryProvider="true" app:iconSpaceReserved="false" />
+        <EditTextPreference app:key="proxy_pass" app:title="Passwort" app:summary="••••••" app:iconSpaceReserved="false" />
+        <Preference app:key="proxy_test" app:title="🔎 Verbindung testen"
+            app:summary="Zeigt die IP-Adresse, die dein Anbieter sieht" app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="Jugendschutz" app:iconSpaceReserved="false">
         <Preference app:key="set_pin" app:title="PIN festlegen / ändern" app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat app:key="auto_lock_adult" app:title="Erwachsenen-Kategorien automatisch sperren"
@@ -53,6 +64,6 @@
             app:summary="Nur ändern, wenn dein Anbieter das verlangt (leer = Standard)" app:iconSpaceReserved="false" />
         <Preference app:key="clear_cache" app:title="Senderlisten neu laden" app:iconSpaceReserved="false" />
         <Preference app:key="check_update" app:title="Nach Updates suchen" app:iconSpaceReserved="false" />
-        <Preference app:key="version" app:title="Version" app:summary="rustTV Android 3.6" app:iconSpaceReserved="false" />
+        <Preference app:key="version" app:title="Version" app:summary="rustTV Android 3.7" app:iconSpaceReserved="false" />
     </PreferenceCategory>
 </PreferenceScreen>

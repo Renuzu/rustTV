@@ -35,7 +35,7 @@ data class Programme(
 )
 
 class Xtream(server: String, private val user: String, private val pass: String,
-             private val userAgent: String = "rustTV-Android") {
+             private val http: okhttp3.OkHttpClient) {
 
     val base: String = normalize(server)
 
@@ -49,8 +49,9 @@ class Xtream(server: String, private val user: String, private val pass: String,
         }
 
         fun from(store: Store): Xtream {
-            val a = store.account ?: return Xtream("http://localhost", "", "")
-            return Xtream(a.server, a.user, a.pass, store.userAgent)
+            val http = Net.client(store.ctx)
+            val a = store.account ?: return Xtream("http://localhost", "", "", http)
+            return Xtream(a.server, a.user, a.pass, http)
         }
     }
 
@@ -61,17 +62,10 @@ class Xtream(server: String, private val user: String, private val pass: String,
     }
 
     private fun get(url: String): String {
-        val c = URL(url).openConnection() as HttpURLConnection
-        c.connectTimeout = 15000
-        c.readTimeout = 60000
-        c.instanceFollowRedirects = true
-        c.setRequestProperty("User-Agent", userAgent)
-        try {
-            val code = c.responseCode
-            if (code !in 200..299) throw Exception("Server antwortet mit Fehler $code")
-            return c.inputStream.bufferedReader().use { it.readText() }
-        } finally {
-            c.disconnect()
+        val req = okhttp3.Request.Builder().url(url).build()
+        http.newCall(req).execute().use { r ->
+            if (!r.isSuccessful) throw Exception("Server antwortet mit Fehler ${r.code}")
+            return r.body?.string() ?: ""
         }
     }
 

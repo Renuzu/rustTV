@@ -418,3 +418,42 @@ pub fn img(u: &Option<String>) -> Option<String> {
         None
     }
 }
+
+// ------------------------------------------------------------ VPN / proxy (desktop app)
+
+/// Sends the proxy settings of this device to the built-in server (desktop app only).
+pub async fn apply_proxy(s: &crate::store::Settings) -> Result<(), String> {
+    let body = serde_json::json!({
+        "kind": s.proxy_kind, "host": s.proxy_host, "port": s.proxy_port,
+        "user": s.proxy_user, "pass": s.proxy_pass,
+    });
+    let r = Request::post("/api/upstream")
+        .header("Content-Type", "application/json")
+        .body(body.to_string())
+        .map_err(|e| e.to_string())?
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+    if r.ok() {
+        Ok(())
+    } else {
+        Err(r.text().await.unwrap_or_default())
+    }
+}
+
+/// Public IP address the provider sees. Ok((ip, proxy)) or Err(message).
+pub async fn test_proxy() -> Result<(String, Option<String>), String> {
+    let r = Request::post("/api/upstream/test")
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+    let v: Value = r.json().await.map_err(|e| e.to_string())?;
+    if v["ok"].as_bool() == Some(true) {
+        Ok((
+            v["ip"].as_str().unwrap_or("?").to_string(),
+            v["proxy"].as_str().map(String::from),
+        ))
+    } else {
+        Err(v["error"].as_str().unwrap_or("?").to_string())
+    }
+}

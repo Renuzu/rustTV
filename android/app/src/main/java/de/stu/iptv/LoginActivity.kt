@@ -42,7 +42,7 @@ class LoginActivity : AppCompatActivity() {
             progress.visibility = View.VISIBLE
             lifecycleScope.launch {
                 val err = withContext(Dispatchers.IO) {
-                    try { Xtream(s, u, p, store.userAgent).login() } catch (e: Exception) {
+                    try { Xtream(s, u, p, Net.client(this@LoginActivity)).login() } catch (e: Exception) {
                         "Server nicht erreichbar: ${e.message}"
                     }
                 }

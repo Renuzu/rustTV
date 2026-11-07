@@ -183,6 +183,8 @@ pub fn settings_page() -> Html {
             { toggle(t("Logos/Cover anzeigen", "Show logos/covers"), "", |x| x.show_logos, |x, v| x.show_logos = v, false) }
             { toggle(t("Favoriten zuerst", "Favorites first"), "", |x| x.fav_first, |x, v| x.fav_first = v, false) }
 
+            <VpnSection desktop={info.mode == "desktop"} />
+
             <h2>{ t("Jugendschutz", "Parental control") }</h2>
             <button class="opt-btn" onclick={set_pin}>{ if s.pin.is_empty() { t("PIN festlegen", "Set PIN") } else { t("PIN ändern", "Change PIN") } }</button>
             <label class="opt">
@@ -204,4 +206,101 @@ pub fn settings_page() -> Html {
             </p>
         </div>
     }
+}
+
+// ------------------------------------------------------------ VPN / proxy
+
+#[derive(Properties, PartialEq)]
+struct VpnProps {
+    desktop: bool,
+}
+
+#[function_component(VpnSection)]
+fn vpn_section(p: &VpnProps) -> Html {
+    let ui = use_ui();
+    let s = use_state(store::settings);
+    let busy = use_state(|| false);
+    let result = use_state(|| None::<Result<(String, Option<String>), String>>);
+
+    let field = |label: &'static str,
+                 kind: &'static str,
+                 value: String,
+                 set: fn(&mut Settings, String)| {
+        let s = s.clone();
+        html! {
+            <label class="opt">
+                <div>{ label }</div>
+                <input type={kind} value={value} autocomplete="off" style="max-width:60%"
+                    oninput={move |e: InputEvent| { let mut v = (*s).clone(); set(&mut v, crate::ui::input_value_i(&e)); s.set(v); }} />
+            </label>
+        }
+    };
+    let test = {
+        let (busy, result) = (busy.clone(), result.clone());
+        Callback::from(move |_: MouseEvent| {
+            let (busy, result) = (busy.clone(), result.clone());
+            busy.set(true);
+            wasm_bindgen_futures::spawn_local(async move {
+                result.set(Some(crate::api::test_proxy().await));
+                busy.set(false);
+            });
+        })
+    };
+    let save = {
+        let (s, busy, result, ui) = (s.clone(), busy.clone(), result.clone(), ui.clone());
+        Callback::from(move |_: MouseEvent| {
+            let v = (*s).clone();
+            store::save_settings(&v);
+            let (busy, result, ui) = (busy.clone(), result.clone(), ui.clone());
+            busy.set(true);
+            wasm_bindgen_futures::spawn_local(async move {
+                match crate::api::apply_proxy(&v).await {
+                    Ok(()) => {
+                        cache::clear();
+                        result.set(Some(crate::api::test_proxy().await));
+                    }
+                    Err(e) => ui.message(t("Fehler", "Error"), &e),
+                }
+                busy.set(false);
+            });
+        })
+    };
+
+    let res = match &*result {
+        None => html! {},
+        Some(Ok((ip, proxy))) => html! {
+            <p class="small">{ format!("✅ {} {ip}", t("Der Anbieter sieht die IP-Adresse:", "The provider sees the IP address:")) }<br/>
+                { match proxy { Some(p) => format!("{} {p}", t("Über:", "Via:")), None => t("Ohne VPN/Proxy (direkt).", "Without VPN/proxy (direct).").to_string() } }</p>
+        },
+        Some(Err(e)) => {
+            html! { <p class="small error">{ format!("❌ {} {e}", t("Keine Verbindung:", "No connection:")) }</p> }
+        }
+    };
+
+    html! {<>
+        <h2>{ t("VPN / Proxy", "VPN / proxy") }</h2>
+        if p.desktop {
+            <p class="muted small">{ t("Nur rustTV läuft über diesen Zugang – der Rest des PCs bleibt normal. Die Daten (SOCKS5- oder HTTP-Proxy) bekommst du bei deinem VPN-Anbieter. Ohne Verbindung spielt rustTV nichts ab, es gibt keinen Rückfall auf die normale Leitung.",
+                                       "Only rustTV uses this connection – the rest of the PC stays normal. Get the details (SOCKS5 or HTTP proxy) from your VPN provider. Without a connection rustTV plays nothing; there is no fallback to the normal line.") }</p>
+            <label class="opt">
+                <div>{ t("Art", "Type") }</div>
+                <select onchange={ let s = s.clone(); move |e: Event| { let mut v = (*s).clone(); v.proxy_kind = input_value(&e); s.set(v); } }>
+                    <option value="" selected={s.proxy_kind.is_empty()}>{ t("Aus", "Off") }</option>
+                    <option value="socks5" selected={s.proxy_kind == "socks5"}>{"SOCKS5"}</option>
+                    <option value="http" selected={s.proxy_kind == "http"}>{"HTTP"}</option>
+                </select>
+            </label>
+            if !s.proxy_kind.is_empty() {
+                { field(t("Server", "Server"), "text", s.proxy_host.clone(), |x, v| x.proxy_host = v) }
+                { field(t("Port", "Port"), "number", s.proxy_port.to_string(), |x, v| x.proxy_port = v.trim().parse().unwrap_or(1080)) }
+                { field(t("Benutzer", "Username"), "text", s.proxy_user.clone(), |x, v| x.proxy_user = v) }
+                { field(t("Passwort", "Password"), "password", s.proxy_pass.clone(), |x, v| x.proxy_pass = v) }
+            }
+            <button class="opt-btn" disabled={*busy} onclick={save}>{ if *busy { t("Verbinde …", "Connecting …") } else { t("💾 Speichern & testen", "💾 Save & test") } }</button>
+        } else {
+            <p class="muted small">{ t("Auf einem Server stellt der Betreiber den Proxy ein (Variable RUSTV_UPSTREAM_PROXY).", "On a server the operator sets the proxy (variable RUSTV_UPSTREAM_PROXY).") }</p>
+            <button class="opt-btn" disabled={*busy} onclick={test}>{ t("🔎 Verbindung testen", "🔎 Test connection") }</button>
+        }
+        { res }
+    </>}
 }

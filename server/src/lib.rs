@@ -34,6 +34,10 @@ pub struct Config {
     pub user_agent: String,
     /// "server" or "desktop" – reported to the web app.
     pub mode: String,
+    /// Route all provider traffic through this proxy (socks5h://user:pass@host:port or http://…).
+    pub upstream_proxy: Option<String>,
+    /// Allow the app to set the proxy itself (desktop app; not for shared servers).
+    pub allow_client_proxy: bool,
 }
 
 impl Config {
@@ -45,14 +49,51 @@ impl Config {
             user_agent: std::env::var("RUSTV_USER_AGENT")
                 .unwrap_or_else(|_| format!("rustTV/{VERSION}")),
             mode: "server".into(),
+            upstream_proxy: std::env::var("RUSTV_UPSTREAM_PROXY")
+                .ok()
+                .filter(|p| !p.is_empty()),
+            allow_client_proxy: false,
         }
     }
 }
 
 struct AppState {
     cfg: Config,
-    http: reqwest::Client,
+    http: std::sync::RwLock<reqwest::Client>,
+    /// currently active proxy (for display, password removed)
+    proxy_shown: std::sync::RwLock<Option<String>>,
     token: Option<String>,
+}
+
+impl AppState {
+    fn client(&self) -> reqwest::Client {
+        self.http.read().unwrap().clone()
+    }
+}
+
+/// HTTP client, optionally routed through a proxy. No silent fallback to a direct connection.
+fn build_client(ua: &str, proxy: Option<&str>) -> Result<reqwest::Client, String> {
+    let mut b = reqwest::Client::builder()
+        .user_agent(ua)
+        .connect_timeout(Duration::from_secs(15))
+        .redirect(reqwest::redirect::Policy::limited(10));
+    match proxy {
+        Some(p) => b = b.proxy(reqwest::Proxy::all(p).map_err(|e| e.to_string())?),
+        None => b = b.no_proxy(),
+    }
+    b.build().map_err(|e| e.to_string())
+}
+
+fn mask_proxy(p: &str) -> String {
+    match url::Url::parse(p) {
+        Ok(mut u) => {
+            if u.password().is_some() {
+                let _ = u.set_password(Some("***"));
+            }
+            u.to_string()
+        }
+        Err(_) => "?".into(),
+    }
 }
 
 type Shared = Arc<AppState>;
@@ -66,18 +107,22 @@ fn token_for(pw: &str) -> String {
 
 /// Build the router (used by the standalone server and the desktop app).
 pub fn router(cfg: Config) -> Router {
-    let http = reqwest::Client::builder()
-        .user_agent(cfg.user_agent.clone())
-        .connect_timeout(Duration::from_secs(15))
-        .redirect(reqwest::redirect::Policy::limited(10))
-        .build()
-        .expect("http client");
+    let http = build_client(&cfg.user_agent, cfg.upstream_proxy.as_deref())
+        .expect("http client (check RUSTV_UPSTREAM_PROXY)");
     let token = cfg.password.as_deref().map(token_for);
-    let state = Arc::new(AppState { cfg, http, token });
+    let shown = cfg.upstream_proxy.as_deref().map(mask_proxy);
+    let state = Arc::new(AppState {
+        cfg,
+        http: std::sync::RwLock::new(http),
+        proxy_shown: std::sync::RwLock::new(shown),
+        token,
+    });
 
     let api = Router::new()
         .route("/api/xtream", get(xtream))
         .route("/api/p", get(proxy))
+        .route("/api/upstream", get(upstream_get).post(upstream_set))
+        .route("/api/upstream/test", post(upstream_test))
         .layer(middleware::from_fn_with_state(state.clone(), require_auth));
 
     Router::new()
@@ -150,6 +195,84 @@ async fn login(State(st): State<Shared>, Json(body): Json<LoginBody>) -> Respons
     }
 }
 
+// ---------------------------------------------------------------- upstream proxy (VPN provider)
+
+#[derive(Deserialize)]
+struct UpstreamBody {
+    /// "socks5" or "http"; empty = off
+    kind: String,
+    #[serde(default)]
+    host: String,
+    #[serde(default)]
+    port: u16,
+    #[serde(default)]
+    user: String,
+    #[serde(default)]
+    pass: String,
+}
+
+fn proxy_url(b: &UpstreamBody) -> Result<Option<String>, String> {
+    if b.kind.is_empty() || b.host.trim().is_empty() {
+        return Ok(None);
+    }
+    // socks5h = name lookups also go through the proxy
+    let scheme = if b.kind == "http" { "http" } else { "socks5h" };
+    let mut u = url::Url::parse(&format!("{scheme}://{}:{}", b.host.trim(), b.port))
+        .map_err(|e| e.to_string())?;
+    if !b.user.is_empty() {
+        u.set_username(&b.user).map_err(|_| "invalid user")?;
+        u.set_password(Some(&b.pass))
+            .map_err(|_| "invalid password")?;
+    }
+    Ok(Some(u.to_string()))
+}
+
+async fn upstream_get(State(st): State<Shared>) -> impl IntoResponse {
+    Json(serde_json::json!({
+        "active": st.proxy_shown.read().unwrap().clone(),
+        "client_may_set": st.cfg.allow_client_proxy,
+    }))
+}
+
+async fn upstream_set(State(st): State<Shared>, Json(b): Json<UpstreamBody>) -> Response {
+    if !st.cfg.allow_client_proxy {
+        return (
+            StatusCode::FORBIDDEN,
+            "set RUSTV_UPSTREAM_PROXY on the server instead",
+        )
+            .into_response();
+    }
+    let url = match proxy_url(&b) {
+        Ok(u) => u,
+        Err(e) => return (StatusCode::BAD_REQUEST, e).into_response(),
+    };
+    match build_client(&st.cfg.user_agent, url.as_deref()) {
+        Ok(c) => {
+            *st.http.write().unwrap() = c;
+            *st.proxy_shown.write().unwrap() = url.as_deref().map(mask_proxy);
+            StatusCode::NO_CONTENT.into_response()
+        }
+        Err(e) => (StatusCode::BAD_REQUEST, e).into_response(),
+    }
+}
+
+/// Shows the public IP address the provider sees (through the proxy if one is active).
+async fn upstream_test(State(st): State<Shared>) -> Response {
+    let r = st
+        .client()
+        .get("https://api.ipify.org?format=json")
+        .timeout(Duration::from_secs(20))
+        .send()
+        .await;
+    match r {
+        Ok(resp) => match resp.json::<serde_json::Value>().await {
+            Ok(v) => Json(serde_json::json!({ "ok": true, "ip": v["ip"], "proxy": st.proxy_shown.read().unwrap().clone() })).into_response(),
+            Err(e) => Json(serde_json::json!({ "ok": false, "error": e.to_string() })).into_response(),
+        },
+        Err(e) => Json(serde_json::json!({ "ok": false, "error": e.to_string() })).into_response(),
+    }
+}
+
 // ---------------------------------------------------------------- xtream api
 
 /// `/api/xtream?server=..&username=..&password=..&action=..` → `{server}/player_api.php?...`
@@ -171,7 +294,7 @@ async fn xtream(State(st): State<Shared>, Query(q): Query<HashMap<String, String
         }
     }
     match st
-        .http
+        .client()
         .get(url)
         .timeout(Duration::from_secs(90))
         .send()
@@ -265,7 +388,7 @@ async fn proxy(
         Ok(u) if u.scheme() == "http" || u.scheme() == "https" => u,
         _ => return (StatusCode::BAD_REQUEST, "invalid url").into_response(),
     };
-    let mut req = st.http.get(target.clone());
+    let mut req = st.client().get(target.clone());
     if let Some(r) = headers.get(header::RANGE) {
         req = req.header(header::RANGE, r.clone());
     }

@@ -22,6 +22,7 @@ fn main() {
             let l = tokio::net::TcpListener::from_std(listener).expect("listener");
             let mut cfg = rustv_server::Config::from_env();
             cfg.mode = "desktop".into();
+            cfg.allow_client_proxy = true; // only reachable from this PC
             cfg.password = None; // only reachable from this PC
             let _ = rustv_server::serve(l, cfg).await;
         });
