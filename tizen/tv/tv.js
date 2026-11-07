@@ -106,6 +106,7 @@
   var hasAv = false;
   try { hasAv = !!(window.webapis && webapis.avplay); } catch (e) {}
   var avObj = document.getElementById("av"), vid = document.getElementById("vid");
+  if (hasAv) document.documentElement.classList.add("tv");
   var player = {
     url: null, onState: null,
     rect: function (x, y, w, h) {
@@ -279,7 +280,7 @@
   // ---- category list helper (left column used by live + grids)
   function catList(kind, cb) {
     cached(kind + ":cats", KINDS[kind].cats, "", function (e, cats) {
-      var l = [{ id: "fav", name: "★ Favoriten" }, { id: "hist", name: "Zuletzt gesehen" }, { id: "*", name: "Alle" }];
+      var l = [{ id: "search", name: "Suche (alles)" }, { id: "fav", name: "★ Favoriten" }, { id: "hist", name: "Zuletzt gesehen" }, { id: "*", name: "Alle" }];
       (cats || []).forEach(function (c) { l.push({ id: String(c.category_id), name: c.category_name }); });
       cb(e, l);
     });
@@ -303,7 +304,7 @@
         catList("live", function (e, l) {
           cats = l; err = e || "";
           var want = startCat || load("live.cat", "*");
-          ci = 2;
+          ci = 3;
           for (var i = 0; i < cats.length; i++) if (cats[i].id === want) ci = i;
           self.loadCat();
         });
@@ -311,7 +312,7 @@
       leave: function () { clearTimeout(epgT); clearTimeout(prevT); player.stop(); lastPreview = null; },
       loadCat: function () {
         loading = true; chans = []; hi = 0; self.render();
-        var c = cats[ci]; if (!c) return;
+        var c = cats[ci]; if (!c || c.id === "search") return;
         catName = c.name;
         if (c.id !== "fav" && c.id !== "hist") save("live.cat", c.id);
         entries("live", c.id, function (e, l) {
@@ -338,7 +339,7 @@
           '</div><div class="side"><div class="preview" id="pv">' + (chans.length ? "Vorschau startet …" : "") + '</div>' +
           '<div class="panel epg" id="epg">' + self.epgHtml() + '</div></div></div>' +
           '<div class="hints"><span><b>OK</b> Vollbild</span><span><b>◀ ▶</b> Kategorien / Sender</span>' +
-          '<span><i class="key k-red"></i>Favorit</span><span><b>Zurück</b> Startseite</span></div>';
+          '<span><i class="key k-red"></i>Favorit</span><span><i class="key k-blue"></i>Suche</span><span><b>Zurück</b> Startseite</span></div>';
         var pv = document.getElementById("pv");
         if (pv) { var r = pv.getBoundingClientRect(); PREVIEW = { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }; }
         if (lastPreview) player.rect(PREVIEW.x, PREVIEW.y, PREVIEW.w, PREVIEW.h);
@@ -368,6 +369,7 @@
         if (zone === "cats") {
           if (k === K.UP) { ci = Math.max(0, ci - 1); self.render(); return true; }
           if (k === K.DOWN) { ci = Math.min(cats.length - 1, ci + 1); self.render(); return true; }
+          if (cats[ci] && cats[ci].id === "search" && (k === K.OK || k === K.RIGHT)) { show(Search()); return true; }
           if (k === K.OK || k === K.RIGHT) { zone = "list"; player.stop(); lastPreview = null; self.loadCat(); return true; }
           return false;
         }
@@ -410,14 +412,14 @@
           cats = l; err = e || "";
           var want = load(kind + ".cat", "*");
           ci = 0; for (var i = 0; i < cats.length; i++) if (cats[i].id === want) ci = i;
-          if (!want || ci === 0 && want !== "fav") ci = 2;
+          if (!want || (ci === 0 && want !== "search")) ci = 3;
           self.loadCat();
         });
       },
       leave: function () { clearTimeout(infoT); },
       loadCat: function () {
         loading = true; items = []; gi = 0; self.render();
-        var c = cats[ci]; if (!c) return;
+        var c = cats[ci]; if (!c || c.id === "search") return;
         if (c.id !== "fav" && c.id !== "hist") save(kind + ".cat", c.id);
         entries(kind, c.id, function (e, l) {
           if (cats[ci] !== c) return;
@@ -445,11 +447,11 @@
           windowed(cats, ci, 10, function (y, i, s) { return '<div class="cat' + (s ? (zone === "cats" ? " f sel" : " sel") : "") + '">' + esc(y.name) + '</div>'; }) +
           '</div></div><div class="gridwrap"><div class="panel info">' +
           (x ? img(iconOf(x)) + '<div style="min-width:0;flex:1"><h3>' + esc(x.name) + '</h3><div class="meta">' + meta.join(" · ") +
-            (isFav(kind, x) ? ' · <span style="color:#fdd835">★ Favorit</span>' : "") + '</div><div class="plot">' + esc(x.plot || plot[idOf(kind, x)] || "") + '</div></div>'
+            (isFav(kind, x) ?  ' · <span style="color:#fff">★ Favorit</span>' : "") + '</div><div class="plot">' + esc(x.plot || plot[idOf(kind, x)] || "") + '</div></div>'
             : '<div class="empty">' + (loading ? "Lade …" : err ? esc(err) : "Keine Einträge in dieser Kategorie.") + '</div>') +
           '</div><div class="grid">' + html + '</div></div></div>' +
           '<div class="hints"><span><b>OK</b> ' + (kind === "series" ? "Staffeln" : "abspielen") + '</span><span><b>◀</b> Kategorien</span>' +
-          '<span><i class="key k-red"></i>Favorit</span><span><b>Zurück</b> Startseite</span><span class="muted">' + (items.length ? (gi + 1) + " / " + items.length : "") + '</span></div>';
+          '<span><i class="key k-red"></i>Favorit</span><span><i class="key k-blue"></i>Suche</span><span><b>Zurück</b> Startseite</span><span class="muted">' + (items.length ? (gi + 1) + " / " + items.length : "") + '</span></div>';
       },
       details: function () { // plot for movies comes from a second request – only after a short pause
         clearTimeout(infoT);
@@ -468,6 +470,7 @@
         if (zone === "cats") {
           if (k === K.UP) { ci = Math.max(0, ci - 1); self.render(); return true; }
           if (k === K.DOWN) { ci = Math.min(cats.length - 1, ci + 1); self.render(); return true; }
+          if (cats[ci] && cats[ci].id === "search" && (k === K.OK || k === K.RIGHT)) { show(Search()); return true; }
           if (k === K.OK || k === K.RIGHT) { zone = "grid"; self.loadCat(); return true; }
           return false;
         }
@@ -621,39 +624,58 @@
     return self;
   }
 
-  // ---- search across live, movies, series
+  // ---- search across live, movies, series (all categories)
+  var allLists = null, allWait = [];
+  function loadAll(cb) { // every channel, movie and series – loaded once, on first search
+    if (allLists) return cb();
+    allWait.push(cb); if (allWait.length > 1) return;
+    var res = {}, left = 3;
+    ["live", "movie", "series"].forEach(function (k) {
+      entries(k, "*", function (e, l) {
+        res[k] = l || [];
+        if (--left === 0) { allLists = res; var w = allWait; allWait = []; w.forEach(function (f) { f(); }); }
+      });
+    });
+  }
   function Search() {
-    var q = "", res = [], ri = -1, busy = false, all = null;
+    var q = load("search.q", ""), res = [], ri = -1, busy = false, typeT = null;
     var self = {
+      isSearch: true,
+      enter: function () { player.onState = null; if (q) self.run(); },
       render: function () {
-        $app.innerHTML = top("Suche") + '<div style="padding:0 84px"><input class="inp' + (ri < 0 ? " f" : "") + '" id="q" placeholder="Name eingeben, dann OK" value="' + esc(q) + '">' +
-          '<div class="panel" style="height:700px">' + (busy ? '<div class="empty">Suche …</div>' : !res.length ? '<div class="empty">' + (q ? "Nichts gefunden." : "Sender, Filme und Serien durchsuchen.") + '</div>' :
-            windowed(res, Math.max(ri, 0), 7, function (x, i, s) {
-              return '<div class="ch' + (s && ri >= 0 ? " f" : "") + '">' + img(iconOf(x.e)) + '<div class="t"><div class="n">' + esc(x.e.name) + '</div><div class="s">' + x.label + '</div></div></div>';
-            })) + '</div></div><div class="hints"><span><b>OK</b> suchen / öffnen</span><span><b>▼</b> Ergebnisse</span><span><b>Zurück</b> Startseite</span></div>';
+        $app.innerHTML = top("Suche", "Sender, Filme und Serien") + '<div style="padding:0 84px"><input class="inp' + (ri < 0 ? " f" : "") + '" id="q" placeholder="Suchbegriff eingeben" value="' + esc(q) + '">' +
+          '<div class="panel" style="height:700px">' + (busy ? '<div class="empty">Suche in allen Kategorien … (beim ersten Mal kann das etwas dauern)</div>' :
+            !res.length ? '<div class="empty">' + (q.length > 1 ? "Nichts gefunden." : "Mindestens 2 Buchstaben eingeben. Gesucht wird in allen Kategorien.") + '</div>' :
+            windowed(res, Math.max(ri, 0), 7, function (x, i, sel) {
+              return '<div class="ch' + (sel && ri >= 0 ? " f" : "") + '">' + img(iconOf(x.e)) + '<div class="t"><div class="n">' + esc(x.e.name) + '</div><div class="s">' + x.label + '</div></div></div>';
+            })) + '</div></div><div class="hints"><span><b>▼</b> zu den Ergebnissen</span><span><b>OK</b> öffnen</span><span><b>Zurück</b> ' + (ri >= 0 ? "zum Suchfeld" : "Startseite") + '</span>' +
+          (res.length ? '<span class="muted">' + res.length + (res.length >= 300 ? "+" : "") + ' Treffer</span>' : "") + '</div>';
         var el = document.getElementById("q");
+        el.oninput = function () { q = el.value; clearTimeout(typeT); typeT = setTimeout(self.run, 500); };
         if (ri < 0) el.focus(); else el.blur();
       },
       run: function () {
-        q = document.getElementById("q").value.trim(); if (!q) return;
-        busy = true; self.render();
-        var go = function () {
-          var n = q.toLowerCase(); res = [];
+        var el = document.getElementById("q"); if (el) q = el.value;
+        q = q.trim(); save("search.q", q);
+        if (q.length < 2) { res = []; self.render(); return; }
+        if (!allLists) { busy = true; self.render(); }
+        loadAll(function () {
+          var words = q.toLowerCase().split(/\s+/); res = [];
           [["live", "Live-TV"], ["movie", "Film"], ["series", "Serie"]].forEach(function (p) {
-            all[p[0]].forEach(function (e) { if (res.length < 200 && String(e.name || "").toLowerCase().indexOf(n) >= 0) res.push({ kind: p[0], e: e, label: p[1] }); });
+            var l = allLists[p[0]];
+            for (var i = 0; i < l.length && res.length < 300; i++) {
+              var n = String(l[i].name || "").toLowerCase(), ok = true;
+              for (var w = 0; w < words.length; w++) if (n.indexOf(words[w]) < 0) { ok = false; break; }
+              if (ok) res.push({ kind: p[0], e: l[i], label: p[1] });
+            }
           });
-          busy = false; ri = res.length ? 0 : -1; self.render();
-        };
-        if (all) return go();
-        all = {}; var left = 3;
-        ["live", "movie", "series"].forEach(function (k) {
-          entries(k, "*", function (e, l) { all[k] = l || []; if (--left === 0) go(); });
+          busy = false; ri = -1; self.render();
         });
       },
       key: function (k) {
         if (ri < 0) {
-          if (k === K.OK) { self.run(); return true; }
-          if (k === K.DOWN && res.length) { q = document.getElementById("q").value; ri = 0; self.render(); return true; }
+          if (k === K.OK) { clearTimeout(typeT); self.run(); return true; }
+          if (k === K.DOWN && res.length) { ri = 0; self.render(); return true; }
           return false;
         }
         if (k === K.UP) { if (ri === 0) ri = -1; else ri--; self.render(); return true; }
@@ -663,8 +685,10 @@
           if (r.kind === "series") show(Series(r.e)); else show(Player(r.kind, same, same.indexOf(r.e), "Suche"));
           return true;
         }
+        if (k === K.RED) { toggleFav(res[ri].kind, res[ri].e); return true; }
         return false;
-      }
+      },
+      beforeBack: function () { if (ri >= 0) { ri = -1; self.render(); return true; } return false; }
     };
     return self;
   }
@@ -678,7 +702,8 @@
           ["Konto", esc(acc.user) + " @ " + esc(base())],
           ["Anmeldung ändern / anderes Konto", "›"],
           ["Favoriten und Verlauf löschen", "›"],
-          ["Version", "rustTV für Fernseher " + VERSION]
+          ["Version", "rustTV für Fernseher " + VERSION],
+          ["‹ Zurück zur Startseite", ""]
         ];
         $app.innerHTML = top("Einstellungen") + '<div style="padding:10px 84px">' + items.map(function (x, i) {
           return '<div class="row' + (i === f ? " f" : "") + '"><span>' + x[0] + '</span><span class="muted">' + x[1] + '</span></div>';
@@ -690,6 +715,7 @@
         if (k === K.OK) {
           if (f === 1) { stack = []; show(Login()); }
           if (f === 2) { ["live", "movie", "series"].forEach(function (x) { save("fav." + x, []); save("hist." + x, []); }); toast("Gelöscht"); }
+          if (f === items.length - 1) back();
           return true;
         }
         return false;
@@ -701,18 +727,25 @@
   var VERSION = "__VERSION__";
 
   // ------------------------------------------------------------------ key dispatch
+  function goBack() {
+    try { if (screen && screen.beforeBack && screen.beforeBack() === true) return; } catch (e) {}
+    try { back(); } catch (e) { stack = []; show(Home()); }
+  }
   document.addEventListener("keydown", function (ev) {
     var k = ev.keyCode;
     var typing = document.activeElement && document.activeElement.tagName === "INPUT";
     if (k === K.BACK || k === K.ESC || (k === K.BS && !typing)) {
       ev.preventDefault();
-      if (screen && screen.beforeBack) screen.beforeBack();
-      back();
+      if (typing) document.activeElement.blur();
+      goBack();
       return;
     }
+    if (k === K.BLUE && screen && !screen.isSearch) { ev.preventDefault(); show(Search()); return; }
     if (typing && (k === K.LEFT || k === K.RIGHT || (k >= 48 && k <= 90) || k === K.BS || k === 32)) return; // let the text field have it
-    if (screen && screen.key && screen.key(k)) ev.preventDefault();
+    try { if (screen && screen.key && screen.key(k)) ev.preventDefault(); } catch (e) { toast("Fehler: " + e.message); }
   });
+  // some Tizen versions report the Return key only as a hardware-key event
+  window.addEventListener("tizenhwkey", function (ev) { if (ev.keyName === "back") goBack(); });
 
   // start
   if (acc && acc.server) show(Home()); else show(Login());
