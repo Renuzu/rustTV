@@ -53,6 +53,12 @@
             app:summary="Zeigt die IP-Adresse, die dein Anbieter sieht" app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="WireGuard (nur für rustTV)" app:iconSpaceReserved="false">
+        <Preference app:key="wg_import" app:title="Konfigurationsdatei importieren (.conf)" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="wg_on" app:persistent="false" app:title="WireGuard verwenden" app:iconSpaceReserved="false" />
+        <Preference app:key="wg_remove" app:title="Konfiguration entfernen" app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="Jugendschutz" app:iconSpaceReserved="false">
         <Preference app:key="set_pin" app:title="PIN festlegen / ändern" app:iconSpaceReserved="false" />
         <SwitchPreferenceCompat app:key="auto_lock_adult" app:title="Erwachsenen-Kategorien automatisch sperren"
@@ -64,6 +70,6 @@
             app:summary="Nur ändern, wenn dein Anbieter das verlangt (leer = Standard)" app:iconSpaceReserved="false" />
         <Preference app:key="clear_cache" app:title="Senderlisten neu laden" app:iconSpaceReserved="false" />
         <Preference app:key="check_update" app:title="Nach Updates suchen" app:iconSpaceReserved="false" />
-        <Preference app:key="version" app:title="Version" app:summary="rustTV Android 3.7" app:iconSpaceReserved="false" />
+        <Preference app:key="version" app:title="Version" app:summary="rustTV Android 3.8" app:iconSpaceReserved="false" />
     </PreferenceCategory>
 </PreferenceScreen>

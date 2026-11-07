@@ -23,6 +23,8 @@ import kotlinx.coroutines.withContext
 /** Startseite: Auswahl Live-TV / Filme / Serien + „Zuletzt gesehen“ mit Bildern. */
 class HomeActivity : AppCompatActivity() {
 
+    private val wg = WgStarter(this, { this })
+
     companion object {
         fun restart(a: Activity) {
             a.startActivity(Intent(a, HomeActivity::class.java)
@@ -94,6 +96,8 @@ class HomeActivity : AppCompatActivity() {
         }
         loadAll()
         Updater.check(this)
+        // WireGuard nur für rustTV: beim Start verbinden, wenn eingeschaltet
+        if (Wg.enabled(this) && !Wg.isUp(this)) wg.start()
     }
 
     override fun onResume() {

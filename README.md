@@ -136,6 +136,8 @@ to the direct connection.
 
 - **Windows / Mac app** and **Android**: *Settings → VPN / proxy*, enter server, port, username and password, then *Save & test*.
   The test shows the IP address your IPTV provider sees.
+- **Android – WireGuard**: *Settings → WireGuard (rustTV only)* → import the `.conf` file from your VPN provider and switch it on.
+  Android creates a tunnel that is used **only by rustTV** (per-app VPN). While it is switched on but not connected, rustTV loads nothing.
 - **Server (Docker / Proxmox)**: set `RUSTV_UPSTREAM_PROXY` (see the table above). It applies to all users of that server.
 
 ## Security notes

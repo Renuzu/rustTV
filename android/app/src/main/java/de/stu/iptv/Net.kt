@@ -32,12 +32,15 @@ object Net {
 
     private fun build(s: Store): OkHttpClient {
         val ua = s.userAgent
+        val appCtx = s.ctx.applicationContext
         val b = OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .followRedirects(true)
             .followSslRedirects(true)
             .addInterceptor { chain ->
+                // WireGuard switched on but not connected: block instead of using the normal line
+                if (Wg.enabled(appCtx) && !Wg.isUp(appCtx)) throw java.io.IOException("WireGuard ist nicht verbunden")
                 chain.proceed(chain.request().newBuilder().header("User-Agent", ua).build())
             }
         val host = s.proxyHost.trim()

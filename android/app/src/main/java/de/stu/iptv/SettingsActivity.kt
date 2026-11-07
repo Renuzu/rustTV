@@ -29,6 +29,41 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     class Fragment : PreferenceFragmentCompat() {
+        private val wg = WgStarter(this, { requireActivity() as AppCompatActivity }) { refreshWg() }
+        private val pickConf = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri == null) return@registerForActivityResult
+            val a = requireActivity()
+            try {
+                val text = a.contentResolver.openInputStream(uri)!!.bufferedReader().use { it.readText() }
+                val server = Wg.importConfig(a, text)
+                Toast.makeText(a, "WireGuard-Konfiguration übernommen: $server", Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                com.google.android.material.dialog.MaterialAlertDialogBuilder(a).setTitle("Ungültige Datei")
+                    .setMessage("Das ist keine gültige WireGuard-Konfiguration (.conf).\n\n${e.message}")
+                    .setPositiveButton("OK", null).show()
+            }
+            refreshWg()
+        }
+
+        private fun refreshWg() {
+            val a = activity ?: return
+            val desc = Wg.describe(a)
+            findPreference<androidx.preference.Preference>("wg_import")?.summary =
+                desc?.let { "Server: $it – antippen zum Ersetzen" } ?: "Keine Datei – .conf von deinem VPN-Anbieter wählen"
+            findPreference<androidx.preference.SwitchPreferenceCompat>("wg_on")?.apply {
+                isEnabled = desc != null
+                isChecked = Wg.enabled(a)
+                summary = when {
+                    !Wg.enabled(a) -> "Aus"
+                    Wg.isUp(a) -> "🔒 Verbunden – nur rustTV nutzt den Tunnel"
+                    else -> "Eingeschaltet, aber nicht verbunden – rustTV lädt solange nichts"
+                }
+            }
+            findPreference<androidx.preference.Preference>("wg_remove")?.isEnabled = desc != null
+        }
+
+        override fun onResume() { super.onResume(); refreshWg() }
+
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             preferenceManager.sharedPreferencesName = Store.FILE
             setPreferencesFromResource(R.xml.prefs, rootKey)
@@ -62,6 +97,21 @@ class SettingsActivity : AppCompatActivity() {
                         .setTitle("VPN / Proxy").setMessage(msg).setPositiveButton("OK", null).show()
                 }
                 true
+            }
+            findPreference<androidx.preference.Preference>("wg_import")?.setOnPreferenceClickListener {
+                pickConf.launch(arrayOf("*/*")); true
+            }
+            findPreference<androidx.preference.SwitchPreferenceCompat>("wg_on")?.setOnPreferenceChangeListener { _, v ->
+                val on = v as Boolean
+                Wg.setEnabled(act, on)
+                Cache.clear()
+                if (on) wg.start() else { Thread { Wg.down(act) }.start() }
+                view?.postDelayed({ refreshWg() }, 800)
+                true
+            }
+            findPreference<androidx.preference.Preference>("wg_remove")?.setOnPreferenceClickListener {
+                Thread { Wg.down(act) }.start()
+                Wg.removeConfig(act); Cache.clear(); refreshWg(); true
             }
             findPreference<androidx.preference.Preference>("check_update")?.setOnPreferenceClickListener {
                 Updater.check(act, manual = true); true
