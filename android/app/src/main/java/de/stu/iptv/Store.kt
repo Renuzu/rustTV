@@ -10,7 +10,7 @@ data class Account(val id: String, val name: String, val server: String, val use
 class Store(val ctx: Context) {
     companion object { const val FILE = "iptv" }
 
-    private val p = ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+    val p = ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE)
 
     init { migrateOldLogin() }
 

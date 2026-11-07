@@ -42,6 +42,11 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Fernseher: eigene TV-Oberfläche (das Handy bleibt bei dieser Startseite)
+        if (Tv.isTv(this)) {
+            startActivity(Intent(this, TvHomeActivity::class.java).putExtras(intent))
+            finish(); return
+        }
         store = Store(this)
         if (!store.loggedIn) { startActivity(Intent(this, LoginActivity::class.java)); finish(); return }
         api = Xtream.from(store)

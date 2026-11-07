@@ -36,6 +36,9 @@
         </activity>
 
         <activity android:name=".HomeActivity" />
+        <activity android:name=".TvHomeActivity" />
+        <activity android:name=".TvBrowseActivity" />
+        <activity android:name=".TvSearchActivity" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".MainActivity" />
         <activity android:name=".SeriesActivity" />
         <activity android:name=".SettingsActivity" />

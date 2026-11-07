@@ -1,6 +1,6 @@
 {
-  "versionCode": 18,
-  "versionName": "3.15",
+  "versionCode": 19,
+  "versionName": "3.16",
   "apk": "https://github.com/Renuzu/rustTV/raw/main/android/dist/rustv-android.apk",
-  "notes": "Neu: Android-TV-Unterst\u00fctzung (Startmen\u00fc-Banner, Fernbedienung, Sender mit Hoch/Runter wechseln)."
+  "notes": "Neu: eigene Oberfl\u00e4che f\u00fcr Android-TV-Ger\u00e4te (Fernseher). Auf dem Handy bleibt alles wie gewohnt."
 }

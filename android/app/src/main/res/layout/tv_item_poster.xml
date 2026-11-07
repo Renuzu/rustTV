@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="vertical" android:padding="6dp" android:focusable="true" android:clickable="true"
+    android:foreground="@drawable/tv_ring">
+    <ImageView android:id="@+id/img" android:layout_width="match_parent" android:layout_height="170dp"
+        android:background="#18233D" android:scaleType="centerCrop" />
+    <TextView android:id="@+id/name" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:paddingTop="6dp" android:ellipsize="end" android:singleLine="true" android:textColor="#CFD7EA" android:textSize="13sp" />
+</LinearLayout>

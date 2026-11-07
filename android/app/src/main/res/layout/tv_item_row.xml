@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kategorie, Sender oder Suchtreffer -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:background="@drawable/tv_row" android:focusable="true" android:clickable="true"
+    android:gravity="center_vertical" android:minHeight="52dp" android:orientation="horizontal"
+    android:paddingStart="12dp" android:paddingEnd="12dp" android:layout_marginBottom="2dp">
+    <TextView android:id="@+id/no" android:layout_width="34dp" android:layout_height="wrap_content"
+        android:gravity="end" android:layout_marginEnd="10dp" android:textColor="#93A0BD" android:textSize="13sp" android:visibility="gone" />
+    <ImageView android:id="@+id/logo" android:layout_width="56dp" android:layout_height="34dp"
+        android:layout_marginEnd="12dp" android:scaleType="fitCenter" android:visibility="gone" />
+    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+        <TextView android:id="@+id/name" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:ellipsize="end" android:singleLine="true" android:textColor="#F3F6FF" android:textSize="16sp" />
+        <TextView android:id="@+id/sub" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:ellipsize="end" android:singleLine="true" android:textColor="#93A0BD" android:textSize="12sp" android:visibility="gone" />
+    </LinearLayout>
+    <TextView android:id="@+id/right" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginStart="8dp" android:textColor="#93A0BD" android:textSize="13sp" />
+</LinearLayout>

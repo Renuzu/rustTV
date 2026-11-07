@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Zeilen: rot = mit der Fernbedienung ausgewählt, blau = gewählte Kategorie -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true"><shape><corners android:radius="12dp" /><solid android:color="#EF2B33" /></shape></item>
+    <item android:state_activated="true"><shape><corners android:radius="12dp" /><solid android:color="#1E3A74" /></shape></item>
+    <item><shape><corners android:radius="12dp" /><solid android:color="#00000000" /></shape></item>
+</selector>
