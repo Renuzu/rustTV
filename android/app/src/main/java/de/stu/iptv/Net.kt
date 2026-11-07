@@ -40,7 +40,12 @@ object Net {
             .followSslRedirects(true)
             .addInterceptor { chain ->
                 // WireGuard switched on but not connected: block instead of using the normal line
-                if (Wg.enabled(appCtx) && !Wg.isUp(appCtx)) throw java.io.IOException("WireGuard ist nicht verbunden")
+                if (Wg.enabled(appCtx) && !Wg.isUp(appCtx)) {
+                    // tunnel is (re)connecting – wait up to 10 s instead of using the normal line
+                    var waited = 0
+                    while (waited < 10_000 && !Wg.isUp(appCtx)) { Thread.sleep(250); waited += 250 }
+                    if (!Wg.isUp(appCtx)) throw java.io.IOException("WireGuard ist nicht verbunden")
+                }
                 chain.proceed(chain.request().newBuilder().header("User-Agent", ua).build())
             }
         val host = s.proxyHost.trim()

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.Toast
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -23,7 +24,8 @@ import kotlinx.coroutines.withContext
 /** Startseite: Auswahl Live-TV / Filme / Serien + „Zuletzt gesehen“ mit Bildern. */
 class HomeActivity : AppCompatActivity() {
 
-    private val wg = WgStarter(this, { this })
+    private val wg = WgStarter(this, { this }) { err -> if (err != null) Wg.setEnabled(this, false); refreshVpn() }
+    private var vpnBtn: com.google.android.material.button.MaterialButton? = null
 
     companion object {
         fun restart(a: Activity) {
@@ -63,6 +65,13 @@ class HomeActivity : AppCompatActivity() {
         }
 
         val cards = findViewById<LinearLayout>(R.id.cards)
+        // VPN-Knopf (nur sichtbar, wenn eine WireGuard-Datei importiert ist)
+        vpnBtn = com.google.android.material.button.MaterialButton(this).apply {
+            isAllCaps = false
+            textSize = 16f
+            setOnClickListener { toggleVpn() }
+        }
+        cards.addView(vpnBtn, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = (12 * resources.displayMetrics.density).toInt() })
         rows = findViewById(R.id.rows)
         val inf = LayoutInflater.from(this)
         val icons = mapOf(Kind.LIVE to R.drawable.ic_live, Kind.MOVIE to R.drawable.ic_movie, Kind.SERIES to R.drawable.ic_series)
@@ -104,6 +113,7 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        refreshVpn()
         Updater.check(this)   // bei jedem Öffnen (höchstens alle 5 Minuten)
         if (Kind.entries.all { Cache.entries.containsKey(it) }) showAll()
     }
@@ -244,5 +254,50 @@ class HomeActivity : AppCompatActivity() {
         p.edit().putBoolean("asked_notify", true).apply()
         if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED)
             requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 7)
+    }
+
+    // ---------------- VPN: WireGuard (nur rustTV) oder Proxy-Zugang ----------------
+    private fun toggleVpn() {
+        val store = Store(this)
+        if (Wg.describe(this) == null) {
+            // Proxy-Zugang an/aus
+            store.proxyOn = !store.proxyOn
+            Cache.clear()
+            Toast.makeText(this, if (store.proxyOn) "VPN/Proxy eingeschaltet" else "VPN/Proxy ausgeschaltet", Toast.LENGTH_SHORT).show()
+            refreshVpn()
+            return
+        }
+        if (Wg.enabled(this) && Wg.isUp(this)) {
+            Wg.setEnabled(this, false)
+            vpnBtn?.isEnabled = false
+            Thread {
+                Wg.down(this)
+                runOnUiThread { Cache.clear(); refreshVpn(); Toast.makeText(this, "VPN getrennt", Toast.LENGTH_SHORT).show() }
+            }.start()
+        } else {
+            Wg.setEnabled(this, true)
+            vpnBtn?.apply { isEnabled = false; text = "⏳ VPN wird verbunden …" }
+            wg.start()
+        }
+    }
+
+    private fun refreshVpn() {
+        val b = vpnBtn ?: return
+        val store = Store(this)
+        val hasWg = Wg.describe(this) != null
+        if (!hasWg && !store.proxyConfigured) { b.visibility = View.GONE; return }
+        b.visibility = View.VISIBLE
+        b.isEnabled = true
+        val on = if (hasWg) {
+            val up = Wg.isUp(this)
+            if (!up && Wg.enabled(this)) {
+                b.text = "⏳ VPN wird verbunden …"
+                b.postDelayed({ if (!isFinishing) refreshVpn() }, 1500)
+                return
+            }
+            up
+        } else store.proxyOn
+        b.text = if (on) "🔒 VPN an – tippen zum Trennen" else "🔓 VPN aus – tippen zum Verbinden"
+        b.setBackgroundColor(if (on) 0xFF2E7D32.toInt() else 0xFF455A64.toInt())
     }
 }

@@ -96,7 +96,14 @@ class Store(val ctx: Context) {
     val posterGrid get() = p.getBoolean("poster_grid", true)
     val pinchZoom get() = p.getBoolean("pinch_zoom", true)
     // VPN / Proxy (nur für diese App)
-    val proxyKind get() = p.getString("proxy_kind", "") ?: ""
+    /** Proxy is configured (type + server). */
+    val proxyConfigured get() = (p.getString("proxy_kind", "") ?: "").isNotEmpty() && proxyHost.isNotBlank()
+    /** Start-screen button: proxy switched on/off (settings stay). */
+    var proxyOn: Boolean
+        get() = p.getBoolean("proxy_on", true)
+        set(v) = p.edit().putBoolean("proxy_on", v).apply()
+    /** Effective proxy type ("" when switched off). */
+    val proxyKind get() = if (proxyOn) (p.getString("proxy_kind", "") ?: "") else ""
     val proxyHost get() = p.getString("proxy_host", "") ?: ""
     val proxyPort get() = (p.getString("proxy_port", "1080") ?: "1080").trim().toIntOrNull() ?: 1080
     val proxyUser get() = p.getString("proxy_user", "") ?: ""

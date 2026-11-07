@@ -344,7 +344,8 @@ fn vpn_section(p: &VpnProps) -> Html {
     let save = {
         let (s, busy, result, ui) = (s.clone(), busy.clone(), result.clone(), ui.clone());
         Callback::from(move |_: MouseEvent| {
-            let v = (*s).clone();
+            let mut v = (*s).clone();
+            v.proxy_on = true;
             store::save_settings(&v);
             let (busy, result, ui) = (busy.clone(), result.clone(), ui.clone());
             busy.set(true);

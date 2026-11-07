@@ -170,6 +170,7 @@ pub fn home_page() -> Html {
                 <Link<Route> to={Route::Settings} classes="icon"><span title={t("Einstellungen", "Settings")}>{"⚙️"}</span></Link<Route>>
             </TopBar>
             <UpdateBanner />
+            <VpnButton />
             <input class="search" type="search" placeholder={ t("🔍 Überall suchen …", "🔍 Search everything …") }
                 value={(*query).clone()} oninput={ let q = query.clone(); move |e: InputEvent| q.set(input_value_i(&e)) } />
             if !q.is_empty() && q.chars().count() >= 2 {
@@ -270,4 +271,51 @@ pub fn is_mac() -> bool {
         .and_then(|w| w.navigator().user_agent().ok())
         .map(|ua| ua.contains("Macintosh"))
         .unwrap_or(false)
+}
+
+/// Desktop app: switch the VPN/proxy on or off from the start screen.
+#[function_component(VpnButton)]
+pub fn vpn_button() -> Html {
+    let info = use_context::<ServerInfo>().unwrap_or_default();
+    let ui = use_ui();
+    let s = use_state(store::settings);
+    let busy = use_state(|| false);
+    if info.mode != "desktop" || s.proxy_kind.is_empty() || s.proxy_host.trim().is_empty() {
+        return html! {};
+    }
+    let on = s.proxy_on;
+    let click = {
+        let (s, busy, ui) = (s.clone(), busy.clone(), ui.clone());
+        Callback::from(move |_: MouseEvent| {
+            let mut v = (*s).clone();
+            v.proxy_on = !v.proxy_on;
+            let (s, busy, ui) = (s.clone(), busy.clone(), ui.clone());
+            busy.set(true);
+            wasm_bindgen_futures::spawn_local(async move {
+                match api::apply_proxy(&v).await {
+                    Ok(()) => {
+                        store::save_settings(&v);
+                        cache::clear();
+                        ui.toast(if v.proxy_on {
+                            t("🔒 VPN/Proxy eingeschaltet", "🔒 VPN/proxy on")
+                        } else {
+                            t("🔓 VPN/Proxy ausgeschaltet", "🔓 VPN/proxy off")
+                        });
+                        s.set(v);
+                        // reload lists through the new connection
+                        if let Some(w) = web_sys::window() {
+                            let _ = w.location().reload();
+                        }
+                    }
+                    Err(e) => ui.message(t("Fehler", "Error"), &e),
+                }
+                busy.set(false);
+            });
+        })
+    };
+    html! {
+        <button class={classes!("vpn-btn", on.then_some("on"))} disabled={*busy} onclick={click}>
+            { if *busy { t("⏳ Bitte warten …", "⏳ Please wait …") } else if on { t("🔒 VPN an – klicken zum Trennen", "🔒 VPN on – click to disconnect") } else { t("🔓 VPN aus – klicken zum Verbinden", "🔓 VPN off – click to connect") } }
+        </button>
+    }
 }

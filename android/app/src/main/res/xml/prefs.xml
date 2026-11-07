@@ -55,7 +55,9 @@
 
     <PreferenceCategory app:title="WireGuard (nur für rustTV)" app:iconSpaceReserved="false">
         <Preference app:key="wg_import" app:title="Konfigurationsdatei importieren (.conf)" app:iconSpaceReserved="false" />
-        <SwitchPreferenceCompat app:key="wg_on" app:persistent="false" app:title="WireGuard verwenden" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="wg_on" app:persistent="false" app:title="WireGuard verwenden" app:summaryOff="Aus" app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat app:key="wg_autostop" app:title="Beim Schließen von rustTV trennen"
+            app:summary="Verbindet sich beim Öffnen automatisch wieder" app:defaultValue="true" app:iconSpaceReserved="false" />
         <Preference app:key="wg_remove" app:title="Konfiguration entfernen" app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
@@ -70,6 +72,6 @@
             app:summary="Nur ändern, wenn dein Anbieter das verlangt (leer = Standard)" app:iconSpaceReserved="false" />
         <Preference app:key="clear_cache" app:title="Senderlisten neu laden" app:iconSpaceReserved="false" />
         <Preference app:key="check_update" app:title="Nach Updates suchen" app:iconSpaceReserved="false" />
-        <Preference app:key="version" app:title="Version" app:summary="rustTV Android 3.10" app:iconSpaceReserved="false" />
+        <Preference app:key="version" app:title="Version" app:summary="rustTV Android 3.11" app:iconSpaceReserved="false" />
     </PreferenceCategory>
 </PreferenceScreen>

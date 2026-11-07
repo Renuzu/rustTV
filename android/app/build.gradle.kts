@@ -23,8 +23,8 @@ android {
         applicationId = "de.stu.iptv"
         minSdk = 26
         targetSdk = 35
-        versionCode = 13
-        versionName = "3.10"
+        versionCode = 14
+        versionName = "3.11"
     }
 
     signingConfigs {
@@ -63,6 +63,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.wireguard.android:tunnel:1.0.20260102")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.lifecycle:lifecycle-process:2.8.6")
     implementation("io.coil-kt:coil:2.7.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
 }

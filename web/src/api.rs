@@ -424,7 +424,7 @@ pub fn img(u: &Option<String>) -> Option<String> {
 /// Sends the proxy settings of this device to the built-in server (desktop app only).
 pub async fn apply_proxy(s: &crate::store::Settings) -> Result<(), String> {
     let body = serde_json::json!({
-        "kind": s.proxy_kind, "host": s.proxy_host, "port": s.proxy_port,
+        "kind": if s.proxy_on { s.proxy_kind.as_str() } else { "" }, "host": s.proxy_host, "port": s.proxy_port,
         "user": s.proxy_user, "pass": s.proxy_pass,
     });
     let r = Request::post("/api/upstream")

@@ -4,7 +4,7 @@ members = ["server", "web", "desktop"]
 default-members = ["server", "web", "desktop"]
 
 [workspace.package]
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/Renuzu/rustTV"

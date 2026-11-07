@@ -77,6 +77,8 @@ pub struct Settings {
     pub proxy_port: u16,
     pub proxy_user: String,
     pub proxy_pass: String,
+    /// start-screen button: proxy on/off (settings stay)
+    pub proxy_on: bool,
 }
 
 impl Default for Settings {
@@ -104,6 +106,7 @@ impl Default for Settings {
             proxy_port: 1080,
             proxy_user: String::new(),
             proxy_pass: String::new(),
+            proxy_on: true,
         }
     }
 }

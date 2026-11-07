@@ -31,6 +31,10 @@ object Wg {
     fun enabled(ctx: Context): Boolean = prefs(ctx).getBoolean("enabled", false) && configText(ctx).isNotBlank()
     fun setEnabled(ctx: Context, on: Boolean) = prefs(ctx).edit().putBoolean("enabled", on).apply()
 
+    /** Setting: close the tunnel when rustTV is closed (and reconnect when it is opened). */
+    fun autoStop(ctx: Context): Boolean =
+        ctx.getSharedPreferences(Store.FILE, Context.MODE_PRIVATE).getBoolean("wg_autostop", true)
+
     /** Checks and stores a .conf file. Returns a short description (server) or throws. */
     fun importConfig(ctx: Context, text: String): String {
         val cfg = Config.parse(text.byteInputStream())
