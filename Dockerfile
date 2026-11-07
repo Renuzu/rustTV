@@ -1,5 +1,5 @@
-# Build ruSTv from source (used by `docker compose build` and for local builds).
-# The published image (ghcr.io/renuzu/rustv) is built in CI from release binaries.
+# Build rustTV from source (used by `docker compose build` and for local builds).
+# The published image (ghcr.io/renuzu/rusttv) is built in CI from release binaries.
 FROM rust:1-bookworm AS build
 RUN rustup target add wasm32-unknown-unknown \
  && cargo install trunk --locked

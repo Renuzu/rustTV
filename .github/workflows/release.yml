@@ -76,7 +76,7 @@ jobs:
         run: |
           mkdir -p bin
           VERSION=$(grep -m1 '^version' Cargo.toml | cut -d '"' -f2)
-          cp target/release/bundle/nsis/*-setup.exe "bin/ruSTv-${VERSION}-windows-setup.exe"
+          cp target/release/bundle/nsis/*-setup.exe "bin/rustTV-${VERSION}-windows-setup.exe"
       - uses: actions/upload-artifact@v4
         with:
           name: bin-windows
@@ -106,7 +106,7 @@ jobs:
         run: |
           mkdir -p bin
           VERSION=$(grep -m1 '^version' Cargo.toml | cut -d '"' -f2)
-          cp target/universal-apple-darwin/release/bundle/dmg/*.dmg "bin/ruSTv-${VERSION}-macos.dmg"
+          cp target/universal-apple-darwin/release/bundle/dmg/*.dmg "bin/rustTV-${VERSION}-macos.dmg"
       - uses: actions/upload-artifact@v4
         with:
           name: bin-macos
@@ -139,8 +139,8 @@ jobs:
           push: true
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
           tags: |
-            ghcr.io/renuzu/rustv:latest
-            ghcr.io/renuzu/rustv:${{ steps.v.outputs.version }}
+            ghcr.io/renuzu/rusttv:latest
+            ghcr.io/renuzu/rusttv:${{ steps.v.outputs.version }}
 
   release:
     needs: [linux, windows, macos]
@@ -159,7 +159,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.v.outputs.version }}
-          name: ruSTv ${{ steps.v.outputs.version }}
+          name: rustTV ${{ steps.v.outputs.version }}
           target_commitish: ${{ github.sha }}
           make_latest: true
           files: bin/*

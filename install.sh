@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# ruSTv installer / updater for Debian & Ubuntu (e.g. a Proxmox LXC container).
+# rustTV installer / updater for Debian & Ubuntu (e.g. a Proxmox LXC container).
 #
-#   bash -c "$(curl -fsSL https://raw.githubusercontent.com/Renuzu/rustv/main/install.sh)"
+#   bash -c "$(curl -fsSL https://raw.githubusercontent.com/Renuzu/rustTV/main/install.sh)"
 #
 # Run it again at any time to update to the latest release.
 set -euo pipefail
 
-REPO="Renuzu/rustv"
+REPO="Renuzu/rustTV"
 BIN=/usr/local/bin/rustv
 ENV_FILE=/etc/rustv.env
 UNIT=/etc/systemd/system/rustv.service
@@ -28,7 +28,7 @@ if ! command -v curl >/dev/null; then
   apt-get update -q && apt-get install -y -q curl ca-certificates
 fi
 
-say "Downloading the latest ruSTv release ($ARCH)"
+say "Downloading the latest rustTV release ($ARCH)"
 TMP=$(mktemp)
 curl -fL --progress-bar -o "$TMP" "https://github.com/$REPO/releases/latest/download/rustv-linux-$ARCH"
 install -m 755 "$TMP" "$BIN"
@@ -39,14 +39,14 @@ id rustv >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/
 if [ ! -f "$ENV_FILE" ]; then
   PW=""
   if [ -r /dev/tty ]; then
-    read -r -p "Choose a password for the ruSTv web interface (empty = random): " PW </dev/tty || true
+    read -r -p "Choose a password for the rustTV web interface (empty = random): " PW </dev/tty || true
   fi
   if [ -z "$PW" ]; then
     PW=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)
     GENERATED=1
   fi
   cat >"$ENV_FILE" <<EOF
-# ruSTv settings – restart after changes: systemctl restart rustv
+# rustTV settings – restart after changes: systemctl restart rustv
 RUSTV_BIND=0.0.0.0:8080
 RUSTV_PASSWORD=$PW
 # RUSTV_USER_AGENT=VLC/3.0.20
@@ -56,7 +56,7 @@ fi
 
 cat >"$UNIT" <<'EOF'
 [Unit]
-Description=ruSTv IPTV player
+Description=rustTV IPTV player
 After=network-online.target
 Wants=network-online.target
 
@@ -80,7 +80,7 @@ systemctl restart rustv
 
 IP=$(hostname -I 2>/dev/null | awk '{print $1}')
 PORT=$(grep -E '^RUSTV_BIND=' "$ENV_FILE" | sed 's/.*://')
-say "ruSTv $("$BIN" --version 2>/dev/null || true) is running: http://${IP:-<this-host>}:${PORT:-8080}"
+say "rustTV $("$BIN" --version 2>/dev/null || true) is running: http://${IP:-<this-host>}:${PORT:-8080}"
 if [ "${GENERATED:-0}" = 1 ]; then
   say "Generated web password: $PW   (change it in $ENV_FILE)"
 fi

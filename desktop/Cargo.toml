@@ -1,6 +1,6 @@
 [package]
 name = "rustv-desktop"
-description = "ruSTv desktop app (Windows, macOS) – standalone, no server needed"
+description = "rustTV desktop app (Windows, macOS) – standalone, no server needed"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

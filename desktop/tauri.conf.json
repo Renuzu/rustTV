@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "ruSTv",
+  "productName": "rustTV",
   "identifier": "io.github.renuzu.rustv",
   "build": {
     "frontendDist": "../web/dist"
@@ -16,7 +16,7 @@
     "targets": [
       "nsis"
     ],
-    "publisher": "ruSTv contributors",
+    "publisher": "rustTV contributors",
     "shortDescription": "Self-hosted IPTV player for Xtream Codes",
     "icon": [
       "icons/32x32.png",

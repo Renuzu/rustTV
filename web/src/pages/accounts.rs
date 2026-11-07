@@ -40,7 +40,7 @@ pub fn server_login(p: &ServerLoginProps) -> Html {
     };
     html! {
         <div class="page narrow">
-            <h1 class="brand">{"ruSTv"}</h1>
+            <h1 class="brand">{"rustTV"}</h1>
             <form class="card-form" onsubmit={submit}>
                 <p>{ t("Dieser Server ist mit einem Passwort geschützt.", "This server is password protected.") }</p>
                 <input type="password" placeholder={t("Server-Passwort", "Server password")} autofocus=true

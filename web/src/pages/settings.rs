@@ -199,7 +199,7 @@ pub fn settings_page() -> Html {
             <button class="opt-btn" onclick={reload_lists}>{ t("↻ Senderlisten neu laden", "↻ Reload channel lists") }</button>
 
             <p class="muted small about">
-                { format!("ruSTv {} · {} · ", info.version, if info.mode == "desktop" { "Desktop" } else { "Server" }) }
+                { format!("rustTV {} · {} · ", info.version, if info.mode == "desktop" { "Desktop" } else { "Server" }) }
                 <a href={format!("https://github.com/{REPO}")} target={if info.mode == "desktop" { "_self" } else { "_blank" }}>{"GitHub"}</a>
             </p>
         </div>

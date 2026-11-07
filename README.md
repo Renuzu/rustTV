@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="web/static/icons/icon-192.png" width="96" alt="ruSTv logo" />
+  <img src="web/static/icons/icon-192.png" width="96" alt="rustTV logo" />
 </p>
 
-<h1 align="center">ruSTv</h1>
+<h1 align="center">rustTV</h1>
 
 <p align="center">
   A fast, self-hosted IPTV player for <b>Xtream Codes</b> providers – written in Rust.<br/>
@@ -18,7 +18,7 @@
   <img src="docs/screenshots/desktop-player.png" width="620" alt="Player with channel list" />
 </p>
 
-> **ruSTv is only a player.** It does not provide, host or link to any channels, movies or series.
+> **rustTV is only a player.** It does not provide, host or link to any channels, movies or series.
 > You need your own subscription from a provider, and you are responsible for using only content you are legally allowed to watch.
 
 ---
@@ -50,7 +50,7 @@
 | Use it on Android                               | Browser (server) **or** the Android APK from Releases     |
 
 The server is needed for browsers because browsers block most IPTV streams (mixed content / CORS).
-ruSTv's server forwards the provider's API, playlists, streams and pictures so they play everywhere.
+rustTV's server forwards the provider's API, playlists, streams and pictures so they play everywhere.
 
 ---
 
@@ -60,7 +60,7 @@ ruSTv's server forwards the provider's API, playlists, streams and pictures so t
 
 ```bash
 mkdir rustv && cd rustv
-curl -fsSLO https://raw.githubusercontent.com/Renuzu/rustv/main/docker-compose.yml
+curl -fsSLO https://raw.githubusercontent.com/Renuzu/rustTV/main/docker-compose.yml
 # edit the password in docker-compose.yml, then:
 docker compose up -d
 ```
@@ -76,7 +76,7 @@ Open `http://<server-ip>:8080`. Update later with `docker compose pull && docker
 3. Run the installer:
    ```bash
    apt update && apt install -y curl
-   bash -c "$(curl -fsSL https://raw.githubusercontent.com/Renuzu/rustv/main/install.sh)"
+   bash -c "$(curl -fsSL https://raw.githubusercontent.com/Renuzu/rustTV/main/install.sh)"
    ```
 4. Choose a password when asked. The script prints the address, e.g. `http://192.168.1.50:8080`.
 
@@ -86,31 +86,31 @@ The installer also works on any other Debian/Ubuntu machine with systemd (x86_64
 
 ### Option 3 – Windows app
 
-Download `ruSTv-x.y.z-windows-setup.exe` from the [latest release](https://github.com/Renuzu/rustv/releases/latest) and run it.
+Download `rustTV-x.y.z-windows-setup.exe` from the [latest release](https://github.com/Renuzu/rustTV/releases/latest) and run it.
 The app contains everything (no server needed). When a new version is out, the app shows a banner with a download link.
 
 > Windows may show a SmartScreen warning because the installer is not code-signed: click *More info → Run anyway*.
 
 ### Option 4 – Mac app
 
-Download `ruSTv-x.y.z-macos.dmg` from the [latest release](https://github.com/Renuzu/rustv/releases/latest),
-open it and drag **ruSTv** into *Applications*. The app is not notarized by Apple, so the first start is blocked:
+Download `rustTV-x.y.z-macos.dmg` from the [latest release](https://github.com/Renuzu/rustTV/releases/latest),
+open it and drag **rustTV** into *Applications*. The app is not notarized by Apple, so the first start is blocked:
 open *System Settings → Privacy & Security* and click **Open Anyway** (only needed once).
 
 ### Option 5 – Android APK
 
-Download `rustv-android.apk` from the [latest release](https://github.com/Renuzu/rustv/releases/latest) and install it
+Download `rustv-android.apk` from the [latest release](https://github.com/Renuzu/rustTV/releases/latest) and install it
 (allow "install unknown apps" for your browser). The app tells you when an update is available and installs it with one tap.
 
 ---
 
 ## Install as an app on iPhone / iPad / Android (PWA)
 
-1. Open your ruSTv address in **Safari** (iPhone/iPad) or **Chrome** (Android).
+1. Open your rustTV address in **Safari** (iPhone/iPad) or **Chrome** (Android).
 2. iPhone/iPad: tap **Share → Add to Home Screen**. Android: menu **⋮ → Install app**.
-3. ruSTv now opens full-screen like a normal app and updates itself when the server is updated.
+3. rustTV now opens full-screen like a normal app and updates itself when the server is updated.
 
-**HTTPS:** full PWA features (offline start, install prompt on Android) need HTTPS. Put ruSTv behind a reverse proxy
+**HTTPS:** full PWA features (offline start, install prompt on Android) need HTTPS. Put rustTV behind a reverse proxy
 such as Caddy, Nginx Proxy Manager or Traefik, or use a VPN like Tailscale/WireGuard to reach it from outside your home.
 
 **iPhone note:** iOS does not allow websites to change the volume, and plays live TV via HLS. If a channel does not
@@ -124,12 +124,12 @@ play, try *Settings → Live TV format → HLS* or copy the stream link (⋮ →
 |---------------------|-----------------|------------------------------------------------------------------|
 | `RUSTV_BIND`        | `0.0.0.0:8080`  | Address and port to listen on                                    |
 | `RUSTV_PASSWORD`    | *(empty)*       | Password for the web interface – **set this** if others can reach the server |
-| `RUSTV_USER_AGENT`  | `ruSTv/<ver>`   | User-Agent sent to the provider (some require e.g. `VLC/3.0.20`) |
+| `RUSTV_USER_AGENT`  | `rustTV/<ver>`   | User-Agent sent to the provider (some require e.g. `VLC/3.0.20`) |
 
 ## Security notes
 
 - Without `RUSTV_PASSWORD`, anyone who can reach the port can use your server as a proxy. Set a password and do not expose it to the internet without HTTPS.
-- Your provider login is stored in the browser of each device and sent to *your* ruSTv server only when needed. ruSTv does not log stream URLs and has no telemetry.
+- Your provider login is stored in the browser of each device and sent to *your* rustTV server only when needed. rustTV does not log stream URLs and has no telemetry.
 - The only external request made by the app itself is the update check against the GitHub releases API.
 
 ## Development
@@ -153,7 +153,7 @@ cargo run --release -p rustv-server       # http://localhost:8080
 Desktop build: `npm i -g @tauri-apps/cli@^2 && cd desktop && tauri build` (after building the web app).
 
 Releases are built automatically by GitHub Actions when a tag `vX.Y.Z` is pushed: Linux binaries (x86_64/ARM64),
-Windows installer, macOS app and a multi-arch Docker image at `ghcr.io/renuzu/rustv`.
+Windows installer, macOS app and a multi-arch Docker image at `ghcr.io/renuzu/rusttv`.
 
 ## Credits
 

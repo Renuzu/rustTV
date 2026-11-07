@@ -35,7 +35,7 @@ data class Programme(
 )
 
 class Xtream(server: String, private val user: String, private val pass: String,
-             private val userAgent: String = "ruSTv-Android") {
+             private val userAgent: String = "rustTV-Android") {
 
     val base: String = normalize(server)
 

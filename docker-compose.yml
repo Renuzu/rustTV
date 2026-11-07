@@ -1,6 +1,6 @@
 services:
   rustv:
-    image: ghcr.io/renuzu/rustv:latest
+    image: ghcr.io/renuzu/rusttv:latest
     # build: .          # uncomment to build from source instead
     container_name: rustv
     restart: unless-stopped

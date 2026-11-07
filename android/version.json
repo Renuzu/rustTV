@@ -1,6 +1,6 @@
 {
-  "versionCode": 8,
-  "versionName": "3.5",
-  "apk": "https://github.com/Renuzu/rustv/raw/main/android/dist/rustv-android.apk",
-  "notes": "Update-Prüfung bei jedem Start. Enthält: Bildformate, Zoom mit zwei Fingern, neuer Name ruSTv."
+  "versionCode": 9,
+  "versionName": "3.6",
+  "apk": "https://github.com/Renuzu/rustTV/raw/main/android/dist/rustv-android.apk",
+  "notes": "Neuer Name: rustTV."
 }

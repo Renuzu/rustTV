@@ -12,7 +12,7 @@ use ui::Ui;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-pub const REPO: &str = "Renuzu/rustv";
+pub const REPO: &str = "Renuzu/rustTV";
 
 #[derive(Routable, Clone, PartialEq, Debug)]
 pub enum Route {
@@ -104,7 +104,7 @@ fn app() -> Html {
         }
         Some(_) if !*has_account => {
             let h = has_account.clone();
-            html! { <div class="page narrow"><h1 class="brand">{"ruSTv"}</h1><AccountForm first={true} on_done={Callback::from(move |_| h.set(true))} /></div> }
+            html! { <div class="page narrow"><h1 class="brand">{"rustTV"}</h1><AccountForm first={true} on_done={Callback::from(move |_| h.set(true))} /></div> }
         }
         Some(_) => html! { <Switch<Route> render={switch} /> },
     };

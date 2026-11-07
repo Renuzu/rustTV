@@ -8,7 +8,7 @@ async fn main() -> std::io::Result<()> {
         return Ok(());
     }
     if std::env::args().any(|a| a == "--help" || a == "-h") {
-        println!("ruSTv {VERSION} – self-hosted IPTV player\n\nEnvironment variables:\n  RUSTV_BIND        address to listen on (default 0.0.0.0:8080)\n  RUSTV_PASSWORD    password for the web interface (recommended)\n  RUSTV_USER_AGENT  User-Agent sent to the IPTV provider");
+        println!("rustTV {VERSION} – self-hosted IPTV player\n\nEnvironment variables:\n  RUSTV_BIND        address to listen on (default 0.0.0.0:8080)\n  RUSTV_PASSWORD    password for the web interface (recommended)\n  RUSTV_USER_AGENT  User-Agent sent to the IPTV provider");
         return Ok(());
     }
     tracing_subscriber::fmt()
@@ -18,7 +18,7 @@ async fn main() -> std::io::Result<()> {
     let bind = std::env::var("RUSTV_BIND").unwrap_or_else(|_| "0.0.0.0:8080".into());
     let cfg = Config::from_env();
     let listener = TcpListener::bind(&bind).await?;
-    tracing::info!("ruSTv {VERSION} listening on http://{bind}");
+    tracing::info!("rustTV {VERSION} listening on http://{bind}");
     if cfg.password.is_none() {
         tracing::warn!(
             "RUSTV_PASSWORD is not set – anyone who can reach this port can use the proxy"

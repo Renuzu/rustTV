@@ -20,7 +20,7 @@ import java.net.URL
  * version.json: {"versionCode": 7, "versionName": "3.4", "apk": "https://…/rustv-android.apk", "notes": "…"}
  */
 object Updater {
-    private const val VERSION_URL = "https://raw.githubusercontent.com/Renuzu/rustv/main/android/version.json"
+    private const val VERSION_URL = "https://raw.githubusercontent.com/Renuzu/rustTV/main/android/version.json"
     private const val PREFS = "updater"
 
     private fun currentCode(ctx: Context): Long {
@@ -34,7 +34,7 @@ object Updater {
             val c = URL(u).openConnection() as HttpURLConnection
             c.connectTimeout = 15000; c.readTimeout = 60000
             c.instanceFollowRedirects = false
-            c.setRequestProperty("User-Agent", "ruSTv-Android")
+            c.setRequestProperty("User-Agent", "rustTV-Android")
             val code = c.responseCode
             if (code in 300..399) { u = URL(URL(u), c.getHeaderField("Location")).toString(); c.disconnect() }
             else return c
@@ -64,7 +64,7 @@ object Updater {
             if (!manual && p.getLong("skipped", 0) == code) return@launch
             MaterialAlertDialogBuilder(a)
                 .setTitle("Update ${info.optString("versionName")} verfügbar")
-                .setMessage(info.optString("notes").ifBlank { "Eine neue Version von ruSTv ist verfügbar." })
+                .setMessage(info.optString("notes").ifBlank { "Eine neue Version von rustTV ist verfügbar." })
                 .setPositiveButton("Jetzt installieren") { _, _ -> download(a, info.optString("apk")) }
                 .setNeutralButton("Diese überspringen") { _, _ -> p.edit().putLong("skipped", code).apply() }
                 .setNegativeButton("Später", null)

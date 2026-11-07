@@ -1,4 +1,4 @@
-// ruSTv player glue: picks the right engine (mpegts.js / hls.js / native),
+// rustTV player glue: picks the right engine (mpegts.js / hls.js / native),
 // handles touch gestures (brightness, volume, seek, channel switch) and keyboard.
 (function () {
   "use strict";

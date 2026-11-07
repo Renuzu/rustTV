@@ -1,6 +1,6 @@
 [package]
 name = "rustv-server"
-description = "Self-hosted backend for the ruSTv IPTV player (Xtream Codes proxy + web app)"
+description = "Self-hosted backend for the rustTV IPTV player (Xtream Codes proxy + web app)"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

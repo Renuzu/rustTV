@@ -9,7 +9,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:title="ruSTv" />
+        android:title="rustTV" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabs"

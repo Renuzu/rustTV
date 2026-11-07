@@ -1,4 +1,4 @@
-# ruSTv for Android
+# rustTV for Android
 
 Native Android app (Kotlin, Media3/ExoPlayer) with Xtream Codes login, sortable lists, bouquet manager,
 vault, parental PIN, gestures, picture-in-picture and multi-view.

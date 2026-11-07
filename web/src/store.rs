@@ -1,5 +1,5 @@
 //! Everything saved on this device (browser localStorage).
-//! Nothing is sent anywhere except to the user's own ruSTv server.
+//! Nothing is sent anywhere except to the user's own rustTV server.
 
 use crate::api::Kind;
 use gloo_storage::{LocalStorage, Storage};
@@ -251,7 +251,7 @@ pub fn set_position(id: &str, secs: f64) {
 
 // ------------------------------------------------------------ backup
 
-/// All ruSTv data as JSON (for moving to another device).
+/// All rustTV data as JSON (for moving to another device).
 pub fn export_all() -> String {
     let mut map = serde_json::Map::new();
     if let Some(st) = web_sys::window().and_then(|w| w.local_storage().ok().flatten()) {

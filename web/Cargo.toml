@@ -1,6 +1,6 @@
 [package]
 name = "rustv-web"
-description = "ruSTv web app (Yew / WebAssembly, installable PWA)"
+description = "rustTV web app (Yew / WebAssembly, installable PWA)"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

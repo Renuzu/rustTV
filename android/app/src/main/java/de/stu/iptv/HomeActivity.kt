@@ -44,7 +44,7 @@ class HomeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_home)
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
-        toolbar.title = "ruSTv"
+        toolbar.title = "rustTV"
         toolbar.subtitle = store.account?.name
         toolbar.inflateMenu(R.menu.home)
         toolbar.setOnMenuItemClickListener {

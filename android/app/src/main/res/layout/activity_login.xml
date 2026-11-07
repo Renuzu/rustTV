@@ -15,7 +15,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="8dp"
-            android:text="ruSTv"
+            android:text="rustTV"
             android:textSize="28sp"
             android:textStyle="bold" />
 

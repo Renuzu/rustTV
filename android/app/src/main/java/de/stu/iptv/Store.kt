@@ -101,7 +101,7 @@ class Store(ctx: Context) {
     val startLast get() = p.getBoolean("start_last", false)
     val showLogos get() = p.getBoolean("show_logos", true)
     val autoLockAdult get() = p.getBoolean("auto_lock_adult", true)
-    val userAgent get() = (p.getString("user_agent", "") ?: "").ifBlank { "ruSTv-Android" }
+    val userAgent get() = (p.getString("user_agent", "") ?: "").ifBlank { "rustTV-Android" }
     var resizeMode: Int
         get() = p.getInt("resize", 0)
         set(v) = p.edit().putInt("resize", v).apply()

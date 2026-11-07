@@ -1,4 +1,4 @@
-//! ruSTv server: serves the web app and proxies Xtream Codes API calls,
+//! rustTV server: serves the web app and proxies Xtream Codes API calls,
 //! HLS playlists, video streams and images, so that browsers can play
 //! streams that would otherwise be blocked (mixed content / CORS).
 
@@ -43,7 +43,7 @@ impl Config {
                 .ok()
                 .filter(|p| !p.is_empty()),
             user_agent: std::env::var("RUSTV_USER_AGENT")
-                .unwrap_or_else(|_| format!("ruSTv/{VERSION}")),
+                .unwrap_or_else(|_| format!("rustTV/{VERSION}")),
             mode: "server".into(),
         }
     }
@@ -120,7 +120,7 @@ async fn require_auth(State(st): State<Shared>, req: Request, next: Next) -> Res
 
 async fn info(State(st): State<Shared>, headers: HeaderMap) -> impl IntoResponse {
     Json(serde_json::json!({
-        "name": "ruSTv",
+        "name": "rustTV",
         "version": VERSION,
         "mode": st.cfg.mode,
         "auth_required": st.token.is_some(),
