@@ -32,6 +32,16 @@ fn main() {
         .setup(move |app| {
             tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::External(url.clone()))
                 .title("ruSTv")
+                // Links to other websites (e.g. the update download on GitHub)
+                // open in the normal browser instead of inside the app.
+                .on_navigation(|u| {
+                    let local = matches!(u.host_str(), Some("127.0.0.1") | Some("localhost"));
+                    if !local && (u.scheme() == "http" || u.scheme() == "https") {
+                        let _ = open::that_detached(u.as_str());
+                        return false;
+                    }
+                    true
+                })
                 .inner_size(1280.0, 800.0)
                 .min_inner_size(480.0, 360.0)
                 .build()?;

@@ -200,7 +200,7 @@ pub fn settings_page() -> Html {
 
             <p class="muted small about">
                 { format!("ruSTv {} · {} · ", info.version, if info.mode == "desktop" { "Desktop" } else { "Server" }) }
-                <a href={format!("https://github.com/{REPO}")} target="_blank">{"GitHub"}</a>
+                <a href={format!("https://github.com/{REPO}")} target={if info.mode == "desktop" { "_self" } else { "_blank" }}>{"GitHub"}</a>
             </p>
         </div>
     }

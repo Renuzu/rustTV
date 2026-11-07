@@ -1,6 +1,6 @@
 {
-  "versionCode": 7,
-  "versionName": "3.4",
+  "versionCode": 8,
+  "versionName": "3.5",
   "apk": "https://github.com/Renuzu/rustv/raw/main/android/dist/rustv-android.apk",
-  "notes": "Neu: Bildformate (Anpassen, Füllen, Strecken, Original, 16:9, 4:3), Zoom mit zwei Fingern, neuer Name ruSTv."
+  "notes": "Update-Prüfung bei jedem Start. Enthält: Bildformate, Zoom mit zwei Fingern, neuer Name ruSTv."
 }

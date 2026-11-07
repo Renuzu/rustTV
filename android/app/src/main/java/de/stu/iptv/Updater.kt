@@ -46,7 +46,7 @@ object Updater {
     fun check(a: AppCompatActivity, manual: Boolean = false) {
         val p = a.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
-        if (!manual && now - p.getLong("last", 0) < 12 * 3600_000L) return
+        if (!manual && now - p.getLong("last", 0) < 5 * 60_000L) return
         p.edit().putLong("last", now).apply()
         a.lifecycleScope.launch {
             val info = withContext(Dispatchers.IO) {

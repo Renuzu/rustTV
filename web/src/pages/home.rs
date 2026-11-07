@@ -249,7 +249,7 @@ pub fn update_banner() -> Html {
             if desktop {
                 <a href={installer.unwrap_or(page.clone())}>{ t("Jetzt herunterladen & installieren", "Download & install now") }</a>
             } else {
-                <a href={page} target="_blank">{ t("Server aktualisieren (Anleitung)", "Update your server (how-to)") }</a>
+                <a href={page} target={if desktop { "_self" } else { "_blank" }}>{ t("Server aktualisieren (Anleitung)", "Update your server (how-to)") }</a>
             }
         </div>
     }

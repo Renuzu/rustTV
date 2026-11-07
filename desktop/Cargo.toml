@@ -12,3 +12,4 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 rustv-server = { path = "../server" }
 tokio = { version = "1", features = ["rt-multi-thread", "net"] }
+open = "5"
