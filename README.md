@@ -54,6 +54,7 @@ You log in with the Xtream Codes data from your own IPTV provider (server addres
 | Samsung TV (Tizen) | `rustTV-samsung-tv.wgt` | no |
 | Windows PC | `rustTV-x.y.z-windows-setup.exe` | no |
 | Mac | `rustTV-x.y.z-macos.dmg` | no |
+| Linux PC | `rustTV-x.y.z-linux-amd64.AppImage` or `.deb` | no |
 | iPhone / iPad | – (no app; web version) | **yes** |
 | Any browser | – (web version) | **yes** |
 
@@ -101,6 +102,17 @@ Sideloading is not officially supported by Samsung and may not work on every mod
 
 1. Download `rustTV-x.y.z-macos.dmg`, open it and drag **rustTV** into *Applications*.
 2. The first start is blocked (not notarized by Apple): *System Settings → Privacy & Security → Open Anyway*.
+</details>
+
+<details><summary><b>Linux PC</b></summary>
+
+- **AppImage (any distribution):** download `rustTV-x.y.z-linux-amd64.AppImage`, make it executable
+  (`chmod +x rustTV-*.AppImage` or right-click → Properties → *Allow executing*) and start it.
+- **Debian / Ubuntu / Mint:** download the `.deb` and install it with `sudo apt install ./rustTV-*-linux-amd64.deb`.
+
+Building it yourself (`cargo run -p rustv-desktop`) needs the WebKitGTK development packages first – see the
+[Tauri prerequisites](https://v2.tauri.app/start/prerequisites/), e.g. on Debian/Ubuntu:
+`sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev`
 </details>
 
 <details><summary><b>iPhone / iPad / any browser</b></summary>
